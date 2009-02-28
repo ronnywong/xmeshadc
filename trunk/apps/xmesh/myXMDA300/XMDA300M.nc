@@ -229,9 +229,9 @@ task void send_radio_msg();
             
 	    //channel parameteres are irrelevent
             
-	    record[14] = call Sample.getSample(0,TEMPERATURE,MISC_SAMPLING_TIME,SAMPLER_DEFAULT);
+	//    record[14] = call Sample.getSample(0,TEMPERATURE,MISC_SAMPLING_TIME,SAMPLER_DEFAULT);
             
-	    record[15] = call Sample.getSample(0,HUMIDITY,MISC_SAMPLING_TIME,SAMPLER_DEFAULT);
+	//    record[15] = call Sample.getSample(0,HUMIDITY,MISC_SAMPLING_TIME,SAMPLER_DEFAULT);
             
 	    record[16] = call Sample.getSample(0, BATTERY,MISC_SAMPLING_TIME,SAMPLER_DEFAULT);
 
@@ -239,9 +239,9 @@ task void send_radio_msg();
 	    //start sampling  channels. Channels 7-10 with averaging since they are more percise.channels 3-6 make active excitation    
 	    record[0] = call Sample.getSample(0,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_33 | DELAY_BEFORE_MEASUREMENT);
 
-	    record[1] = call Sample.getSample(1,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_25 | DELAY_BEFORE_MEASUREMENT);
+	//    record[1] = call Sample.getSample(1,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_25 | DELAY_BEFORE_MEASUREMENT);
             
-	    record[2] = call Sample.getSample(2,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_50 | DELAY_BEFORE_MEASUREMENT);
+	//    record[2] = call Sample.getSample(2,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_50 | DELAY_BEFORE_MEASUREMENT);
             
 	    //record[3] = call Sample.getSample(3,ANALOG,ANALOG_SAMPLING_TIME,SAMPLER_DEFAULT | EXCITATION_33 | DELAY_BEFORE_MEASUREMENT);
 
@@ -268,11 +268,11 @@ task void send_radio_msg();
             
 	    //digital chennels as accumulative counter                
             
-	    record[17] = call Sample.getSample(0,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
+	//    record[17] = call Sample.getSample(0,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
+           
+	//    record[18] = call Sample.getSample(1,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
             
-	    record[18] = call Sample.getSample(1,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
-            
-	    record[19] = call Sample.getSample(2,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
+	//    record[19] = call Sample.getSample(2,DIGITAL,DIGITAL_SAMPLING_TIME,DIG_LOGIC | EVENT);
             
 	    //record[20] = call Sample.getSample(3,DIGITAL,DIGITAL_SAMPLING_TIME,FALLING_EDGE);
             
@@ -579,7 +579,7 @@ task void send_radio_msg();
         if (sending_packet)
              return SUCCESS; 
             
-		if (msg_status == pkt_full) {
+		if (msg_status == pkt_full || msg_status == 0x01) { //JODOM: So send when get analog
 		 atomic msg_status = 0;
 		 call StdControl.stop();
 		 post send_radio_msg();
