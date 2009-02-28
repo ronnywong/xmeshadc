@@ -1,0 +1,44 @@
+#
+# FILE:    uart0.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# Provides setting of baudrate of UART0
+#
+#	uart0,<uart0>	
+#
+#	UART0=<uart0>	where clock is one of:
+#    9600
+#		19200
+#		28800
+#		38400
+#		57600
+#		76800
+#	 115200
+#	 230400
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: uart0.extra,v 1.1.4.1 2007/01/16 08:15:23 barry Exp $
+#
+
+ifeq ($(UART0),)
+    UART0=57600
+endif
+
+ifneq ($(UART0), 4800)
+ifneq ($(UART0), 9600)
+ifneq ($(UART0), 19200)
+ifneq ($(UART0), 57600)
+ifneq ($(UART0), 115200)
+    $(error incorret UART0 baud rate specified, only 4800, 9600, 19200, 57600, 115200bps are permitted.)
+endif
+endif
+endif
+endif
+endif
+
+PFLAGS += -DUART0_BAUDRATE=$(UART0)
+		
+
+

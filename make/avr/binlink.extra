@@ -1,0 +1,221 @@
+#
+# @file    binlink.extra
+# @author  Xin Yang, Ning Xu, Rahul Kapur, Martin Turon
+# @date    January 25, 2006
+#
+# $Id: binlink.extra,v 1.9.4.10 2007/04/19 01:08:54 nxu Exp $ 
+###### Default Binlink Behavior #############################################
+
+#BUILD_DEFAULT=source
+BUILD_DEFAULT=binary
+
+#debugging stuff
+#BINLINK = radiobinsrc
+#BINLINK = xmesh
+#BINLINK = none
+#BINLINK = radio
+#BINLINK = all
+
+#default always assigned.  This is done also in route.extra
+ifeq ($(ROUTE),)
+    ROUTE=hp
+endif
+
+# No binlink flags specified
+ifeq ($(BINLINK),)
+	
+	#default to source
+	ifeq ($(BUILD_DEFAULT),source)
+    	XMESH_BUILD_MODE = source
+    	RADIO_BUILD_MODE = source
+    endif
+    
+    #default to binary
+	ifeq ($(BUILD_DEFAULT),binary)
+	
+	#detect XMesh
+	# this will scan the top-level wiring for XMesh.
+	# grep -c is used to minimize memory usage of make
+	XMESH_COMPONENTS:=$(shell grep -c MULTIHOPROUTER $(COMPONENT).nc)		
+	XMESH_COMPONENTS:=$(strip $(XMESH_COMPONENTS))
+
+	ifeq ($(XMESH_COMPONENTS),0)
+	   XMESH_COMPONENTS:=$(shell grep -c XMeshBinaryRouter $(COMPONENT).nc)
+	endif
+	XMESH_COMPONENTS:=$(strip $(XMESH_COMPONENTS))
+
+      #$(error $(XMESH_COMPONENTS))
+
+		ifeq ($(XMESH_COMPONENTS),0)
+			XMESH_BUILD_MODE = source
+		else
+			XMESH_BUILD_MODE = binary
+		endif
+		
+		#detect Radio
+		ifeq ($(ROUTE),lp)
+   			RADIO_BUILD_MODE = binary
+   		else
+   			#hp always src
+   			RADIO_BUILD_MODE = source
+   		endif
+   	endif
+
+endif
+
+
+###### User Specified Binlink Behavior ######################################
+
+#NONE
+ifeq ($(BINLINK),none)
+	XMESH_BUILD_MODE = source
+	RADIO_BUILD_MODE = source
+endif
+
+#ALL
+ifeq ($(BINLINK),all)
+
+	#xmesh linkage
+    XMESH_BUILD_MODE = binary
+    
+    #radio linkage
+    ifeq ($(ROUTE),lp)
+    	RADIO_BUILD_MODE = binary
+    else
+    	#hp always source
+    	RADIO_BUILD_MODE = source
+    endif
+endif
+
+#XMESH
+ifeq ($(BINLINK),xmesh)
+    XMESH_BUILD_MODE = binary
+    RADIO_BUILD_MODE = source
+endif
+
+#RADIO
+ifeq ($(BINLINK),radio)
+
+	#xmesh linkage
+    XMESH_BUILD_MODE = source
+
+    #radio linkage
+    ifeq ($(ROUTE),lp)
+    	RADIO_BUILD_MODE = binary
+    else
+    	#hp always source
+    	RADIO_BUILD_MODE = source
+    endif
+endif
+
+#RADIO BINARY SOURCE (internal)
+ifeq ($(BINLINK),radiobinsrc)
+    XMESH_BUILD_MODE = source
+    RADIO_BUILD_MODE = binsource
+endif
+
+###### ncc 1.2 check ########################################################
+ifneq ($(BINLINK),none)
+    GOAHEAD = yes
+    ifeq ($(findstring 1.0, $(shell ncc --version)), 1.0) 
+          GOAHEAD = no
+    endif
+    ifeq ($(findstring 1.1, $(shell ncc --version)), 1.1) 
+          GOAHEAD = no
+    endif
+    ifeq ($(GOAHEAD),no)
+      $(error You need nesC 1.2 or upward to use XMesh binary component, please update your nesC)
+    endif
+endif
+
+###### Binary File Locations ################################################
+
+#XMESH BINARY
+XMESHBINDIR = $(TOSDIR)/lib/XMeshBin
+XMESHBINFLAGS = -L$(XMESHBINDIR)
+XMESHTAG = $(PLATFORM)
+RADIOTAG = $(PLATFORM)
+
+ifeq ($(XMESHTAG), mica2dot)
+      XMESHTAG=mica2
+endif
+ifeq ($(XMESHTAG), micazb)
+      XMESHTAG=m2100
+endif
+ifeq ($(XMESHTAG), micazc)
+      XMESHTAG=m2110
+endif
+ifeq ($(XMESHTAG), iris)
+      XMESHTAG=m2110
+endif
+XMESHBINNAME = $(XMESHBINDIR)/XMesh_$(XMESHTAG).o
+
+#RADIO BINARY
+ifeq ($(RADIOTAG), micaz)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSend/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/SlottedSend.o
+endif
+ifeq ($(RADIOTAG), mica2)
+	RADIOBINDIR = $(TOSDIR)/radio/cc1000lp/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_mica2.o
+endif
+ifeq ($(RADIOTAG), mica2dot)
+	RADIOBINDIR = $(TOSDIR)/radio/cc1000lp/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_mica2dot.o
+endif
+ifeq ($(RADIOTAG), m2100)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSend/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_m2100.o
+endif
+ifeq ($(RADIOTAG), micazb)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSend/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_m2100.o
+endif
+ifeq ($(RADIOTAG), m2110)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSendRF230/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/SlottedSend.o
+endif
+ifeq ($(RADIOTAG), iris)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSendRF230/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/SlottedSend.o
+endif
+ifeq ($(RADIOTAG), micazc)
+	RADIOBINDIR = $(TOSDIR)/lib/SlottedSendRF230/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/SlottedSend.o
+endif
+ifeq ($(RADIOTAG), m4100)
+	RADIOBINDIR = $(TOSDIR)/radio/cc1000lp/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_m9100.o
+endif
+ifeq ($(RADIOTAG), m9100)
+	RADIOBINDIR = $(TOSDIR)/radio/cc1000lp/bin
+	RADIOBINFLAGS = -L$(RADIOBINDIR)
+	RADIOBINNAME =$(RADIOBINDIR)/XRadio_m9100.o
+endif
+
+###### NCC parameters #######################################################
+
+#BIN GENERAL
+ifeq ($(XMESH_BUILD_MODE),binary)	
+	BINARY_DIRS += $(XMESHBINFLAGS)
+	BINARY_FILES += $(XMESHBINNAME)
+	_BUILD_MODE = binary
+endif
+
+ifeq ($(RADIO_BUILD_MODE),binary)
+	#cc2420	
+#	ifeq ($(PLATFORM), micaz)
+		BINARY_DIRS += $(RADIOBINFLAGS)
+		BINARY_FILES += $(RADIOBINNAME)
+		_BUILD_MODE = binary
+#	endif
+endif

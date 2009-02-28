@@ -1,0 +1,27 @@
+#
+# FILE:    watchdog.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# WatchDog - Specify whether the Watchdog is enabled  
+#
+#	watchdog,<watchdog>	
+#
+#	WATCHDOG=<watchdog>	where watchdog(1 Byte in binary) is one of :
+#		0 = disable
+#		1 = enabled
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: watchdog.extra,v 1.1 2006/01/15 05:10:59 husq Exp $
+#
+
+ifeq ($(WATCHDOG),)
+    WATCHDOG=0
+endif
+
+ifeq ($(WATCHDOG),1)
+		PFLAGS += -DUSE_WATCHDOG
+endif
+
+		

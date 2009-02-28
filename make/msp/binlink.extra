@@ -1,0 +1,150 @@
+#
+# @file    binlink.extra
+# @author  Xin Yang, Ning Xu, Rahul Kapur, Martin Turon
+# @date    January 25, 2006
+#
+# $Id: binlink.extra,v 1.1 2006/03/15 10:16:06 pipeng Exp $ 
+###### Default Binlink Behavior #############################################
+
+#BUILD_DEFAULT=source
+BUILD_DEFAULT=binary
+
+#debugging stuff
+#BINLINK = radiobinsrc
+#BINLINK = xmesh
+#BINLINK = none
+#BINLINK = radio
+#BINLINK = all
+
+#default always assigned.  This is done also in route.extra
+ifeq ($(ROUTE),)
+    ROUTE=hp
+endif
+
+
+# No binlink flags specified
+ifeq ($(BINLINK),)
+	
+	#default to source	
+	ifeq ($(BUILD_DEFAULT),source)
+	
+    	XMESH_BUILD_MODE = source
+    	RADIO_BUILD_MODE = source
+
+        endif
+    
+    #default to binary
+	ifeq ($(BUILD_DEFAULT),binary)	
+	#detect XMesh
+	# this will scan the top-level wiring for XMesh.
+	# grep -c is used to minimize memory usage of make
+	XMESH_COMPONENTS:=$(shell grep -c MULTIHOPROUTER $(COMPONENT).nc)		
+	XMESH_COMPONENTS:=$(strip $(XMESH_COMPONENTS))
+
+	ifeq ($(XMESH_COMPONENTS),0)
+	   XMESH_COMPONENTS:=$(shell grep -c XMeshBinaryRouter $(COMPONENT).nc)
+	endif
+	XMESH_COMPONENTS:=$(strip $(XMESH_COMPONENTS))
+
+      #$(error $(XMESH_COMPONENTS))
+
+		ifeq ($(XMESH_COMPONENTS),0)
+			XMESH_BUILD_MODE = source
+		else
+			XMESH_BUILD_MODE = binary
+		endif
+		
+		#detect Radio
+		ifeq ($(ROUTE),lp)
+   			RADIO_BUILD_MODE = binary
+   		else
+   			#hp always src
+   			RADIO_BUILD_MODE = source
+   		endif
+   	endif
+
+endif
+
+
+###### User Specified Binlink Behavior ######################################
+
+#NONE
+ifeq ($(BINLINK),none)
+	XMESH_BUILD_MODE = source
+	RADIO_BUILD_MODE = source
+endif
+
+#ALL
+ifeq ($(BINLINK),all)
+
+	#xmesh linkage
+    XMESH_BUILD_MODE = binary
+    
+    #radio linkage
+    ifeq ($(ROUTE),lp)
+    	RADIO_BUILD_MODE = binary
+    else
+    	#hp always source
+    	RADIO_BUILD_MODE = source
+    endif
+endif
+
+#XMESH
+ifeq ($(BINLINK),xmesh)
+    XMESH_BUILD_MODE = source
+    RADIO_BUILD_MODE = source
+endif
+
+#RADIO
+ifeq ($(BINLINK),radio)
+
+	#xmesh linkage
+    XMESH_BUILD_MODE = source
+
+    #radio linkage
+    ifeq ($(ROUTE),lp)
+    	RADIO_BUILD_MODE = binary
+    else
+    	#hp always source
+    	RADIO_BUILD_MODE = source
+    endif
+endif
+
+#RADIO BINARY SOURCE (internal)
+ifeq ($(BINLINK),radiobinsrc)
+    XMESH_BUILD_MODE = source
+    RADIO_BUILD_MODE = binsource
+endif
+
+###### ncc 1.2 check ########################################################
+ifneq ($(BINLINK),none)
+    GOAHEAD = yes
+    ifeq ($(findstring 1.0, $(shell ncc --version)), 1.0) 
+          GOAHEAD = no
+    endif
+    ifeq ($(findstring 1.1, $(shell ncc --version)), 1.1) 
+          GOAHEAD = no
+    endif
+    ifeq ($(GOAHEAD),no)
+      $(error You need nesC 1.2 or upward to use XMesh binary component, please update your nesC)
+    endif
+endif
+
+###### Binary File Locations ################################################
+
+#XMESH BINARY
+XMESHBINDIR = $(TOSDIR)/lib/XMeshTelosbBin
+XMESHBINFLAGS = -L$(XMESHBINDIR)
+BINARYPLATFORM = $(PLATFORM)
+
+XMESHBINNAME = $(XMESHBINDIR)/XMesh_$(BINARYPLATFORM).o
+
+###### NCC parameters #######################################################
+
+#BIN GENERAL
+ifeq ($(XMESH_BUILD_MODE),binary)	
+	BINARY_DIRS += $(XMESHBINFLAGS)
+	BINARY_FILES += $(XMESHBINNAME)
+	_BUILD_MODE = binary
+endif
+

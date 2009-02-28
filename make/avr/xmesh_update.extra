@@ -1,0 +1,23 @@
+#
+# FILE:    xmesh_update.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# XM_Route_Update - Specify route update interval  
+#
+#	xmesh_update,<xmesh_update>	
+#
+#	XMESH_UPDATE=<xmesh_update>	where xmesh_update(4 Byte in binary) is in msecond
+#		default as 60s
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: xmesh_update.extra,v 1.1 2006/01/15 05:10:59 husq Exp $
+#
+
+ifeq ($(XMESH_UPDATE),)
+    XMESH_UPDATE=60000
+endif
+
+PFLAGS += -DROUTE_UPDATE_INTERVAL=$(XMESH_UPDATE)
+		

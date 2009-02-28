@@ -1,0 +1,68 @@
+# $Id: Makefile.mica,v 1.2.4.2 2007/04/06 01:45:16 mturon Exp $
+
+include Makefile.component
+
+all: mica2 micaz 
+#m9100 m2100 
+
+# HP set LED on
+mica2: 903_hp 433_hp 315_hp 
+m9100: M9100_hp
+micaz: 2420_hp
+m2100: M2100_hp
+
+# LP set LED off
+mica2: 903_lp 433_lp 315_lp 
+m9100: M9100_lp
+micaz: 2420_lp
+m2100: M2100_lp
+
+
+315_hp:
+	make freq,315  route,hp mica2 leds
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+
+315_lp:
+	make freq,315  route,lp mica2 
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+
+433_hp:
+	make freq,433  route,hp mica2 leds
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+
+433_lp:
+	make freq,433  route,lp mica2 
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+
+903_hp:
+	make freq,903  route,hp mica2 leds
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+
+903_lp:
+	make freq,903  route,lp mica2 
+	cp build/mica2/main.exe build/mica2/$(COMPONENT)_$@.exe
+	
+2420_hp: 
+	make freq,2420  route,hp micaz leds
+	cp build/micaz/main.exe build/micaz/$(COMPONENT)_$@.exe
+	
+2420_lp: 
+	make freq,2420  route,lp micaz 
+	cp build/micaz/main.exe build/micaz/$(COMPONENT)_$@.exe
+	
+M9100_hp:
+	make freq,903  route,hp m9100 leds
+	cp build/m9100/main.exe build/m9100/$(COMPONENT)_$@.exe
+
+M9100_lp:
+	make freq,903  route,lp m9100 
+	cp build/m9100/main.exe build/m9100/$(COMPONENT)_$@.exe
+
+M2100_hp:
+	make freq,2420  route,hp m2100 leds
+	cp build/m2100/main.exe build/m2100/$(COMPONENT)_$@.exe
+
+M2100_lp:
+	make freq,2420  route,lp m2100 
+	cp build/m2100/main.exe build/m2100/$(COMPONENT)_$@.exe
+

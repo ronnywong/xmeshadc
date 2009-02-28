@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XJoin Mesh XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="msgtype" byteoffset="12" length="1" type="uint8"/>
+			<XField name="uid" byteoffset="13" length="8" type="raw"/>			
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			<XCond name="IsEqual">
+				<XFilterParam name="fieldname" value="socketid"/>
+				<XFilterParam name="fieldvalue" value="0x96"/>
+			</XCond>
+			<XCond name="IsEqual">
+				<XFilterParam name="fieldname" value="msgtype"/>
+				<XFilterParam name="fieldvalue" value="0"/>
+			</XCond>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="XJOIN: UniqueId = [%s]"/>
+				<XDSParam name="printfields" value="uid"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+</XServeConfig>

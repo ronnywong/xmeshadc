@@ -1,0 +1,9 @@
+# $Id: Makefile.component,v 1.2 2006/01/09 17:17:31 abroad Exp $
+
+COMPONENT=XMeshCountToLeds
+MSG_SIZE = 49
+
+
+
+
+

@@ -1,0 +1,9 @@
+# $Id: Makefile.component,v 1.2 2006/02/03 20:53:10 mturon Exp $
+
+COMPONENT=Detect
+SENSORBOARD=msp410
+
+#CFLAGS = -DCC1K_DEFAULT_FREQ=CC1K_433_002_MHZ
+#CFLAGS += -DRADIO_XMIT_POWER=0xff
+
+#INCLUDES = -I$(XBOWROOT)/lib/MicInt -I$(XBOWROOT)/lib/Mag

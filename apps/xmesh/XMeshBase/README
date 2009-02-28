@@ -1,0 +1,48 @@
+XMeshBase Release Notes 
+-----------------------
+
+DESCRIPTION
+-----------
+- Serve as the gateway and forward packets for any XMesh application 
+- Handles injection of XCommand packets
+- Maximum data payload: 55 bytes
+
+  Supported networking stacks:
+	MintRoute, ReliableRoute, Reliable_LowPower, Reliable_TimeSync, 
+	XMesh HP, XMesh LP, XMesh2 HP, XMesh2 LP
+
+  To build:
+	make <platform> base freq,<frequency>
+
+FEATURES
+--------
+- Debug LEDs 	(FEATURE_LEDS)
+
+DATA PACKET FORMAT
+------------------
+- Does not send any data packets
+
+struct TOS_Msg_Header {
+  uint16_t addr;
+  uint8_t type;		    	// XMULTIHOPMSG_ID = 51
+  uint8_t group;
+  uint8_t length;
+}
+struct Multihop_Header {
+  uint16_t sourceaddr;
+  uint16_t originaddr;
+  int16_t seqno;
+  uint8_t socket;
+}
+struct XSensor_Header{
+  uint8_t  board_id;	 	// SENSOR_BOARD_ID = 0x83(mts310), 0x84(mts300)
+  uint8_t  packet_id;
+  uint8_t  node_id;
+  uint8_t  parent;       
+}
+struct Data_Payload {
+  uint16_t vref;
+  uint16_t thermistor;
+  uint16_t light;
+}
+

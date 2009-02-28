@@ -1,0 +1,15 @@
+README 
+
+author: pipeng
+
+Description:
+
+The MDA100CB is a modification for MDA100CA
+use PW0 instead of INT2 to control temp sensor
+
+-Read temperature and light sensor readings
+-Output message to uart port
+-Output message to radio port
+
+low power test:
+Average Current : 261uA in one hour without sensorboard.

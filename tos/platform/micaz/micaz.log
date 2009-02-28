@@ -1,0 +1,20 @@
+1/05/05
+	HPLTimer2.nc
+		- Bug fix, shouldn't affect operations
+	
+	TimerC.nc
+		- New config file that exports radio timer interface
+		
+	TimerM.nc
+		- New timer file with modifications for async firing
+		
+	Timer.nc
+		- Interface change to standard Timer interface
+		
+	HPLPowerManagementM.nc
+		- cleaned up, 
+
+1/15/05
+	PinMacros.h
+		- added debugging file
+		

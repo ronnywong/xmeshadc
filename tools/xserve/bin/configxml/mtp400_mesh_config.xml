@@ -1,0 +1,785 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMTP400 Multihop PK0 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16"/>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x80"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               RTD1 temperature: = %s degC \n               RTD2 temperature: = %s degC \n               RTD3 temperature: = %s degC \n"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK7 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x07"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x87"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               CH1 Current: = %s Amp \n               CH2 Current: = %s Amp \n               CH3 Current: = %s Amp"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK1 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x01"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x81"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               CH1 Current: = %s Amp \n               RTD2 temperature: = %s degC \n               RTD3 temperature: = %s degC "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK2 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x02"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x82"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               RTD1 temperature: = %s degC \n               CH2 Current: = %s Amp \n               RTD3 temperature: = %s degC"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK3 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x03"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x83"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               CH1 Current: = %s Amp \n               CH2 Current: = %s Amp\n               RTD3 temperature: = %s degC "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK4 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x04"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x84"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               RTD1 temperature: = %s degC\n               RTD2 temperature: = %s degC\n               CH3 Current: = %s Amp "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK5 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x05"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x85"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               CH1 Current: = %s Amp\n               RTD2 temperature: = %s degC\n               CH3 Current: = %s Amp "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTP400 Multihop PK6 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="CH1_reading" byteoffset="18" length="2" type="short">
+				<XConversion function="1.8*(x/10.0)+32" returntype="float">
+					<XConvParam variablename="x" fieldname="CH1_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH2_reading" byteoffset="20" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH2_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+			<XField name="CH3_reading" byteoffset="22" length="2" type="short">
+				<XConversion function="(x/10.0)" returntype="float">
+					<XConvParam variablename="x" fieldname="CH3_reading" type="short"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>			
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA1"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x06"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x86"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="mtp400 [sensor data converted to engineering units]:\n   health: node id=%s  parent=%s	battery: = %s mv \n               RTD1 temperature: = %s degC\n               CH2 Current: = %s Amp\n               CH3 Current: = %s Amp "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mtp400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>				
+				<XDSParam name="tablename_2" value="mtp400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mtp400_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, sensortype integer, voltage integer, CH1_reading integer, CH2_reading integer, CH3_reading integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE mtp400_results AS ON INSERT TO mtp400_results DO ( DELETE FROM mtp400_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mtp400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mtp400_results (result_time,nodeid,parent,sensortype,voltage,CH1_reading,CH2_reading,CH3_reading) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,packet_id,voltage,CH1_reading,CH2_reading,CH3_reading"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

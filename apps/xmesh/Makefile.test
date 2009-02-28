@@ -1,0 +1,85 @@
+#-*-makefile-*-
+######################################################################
+# 
+# Makes the XMesh suite of TinyOS applications for all
+# sensorboards, platforms, and radio frequencies.
+#
+#   SUBDIRS = dir1 dir2 ...
+#     Specify a list of subdirectories that 'make' should descend into
+#
+# NOTE: this Makefile requires GNU make, as well as a number of 
+#       standard UNIX shell tools.
+#
+######################################################################
+# $Id: Makefile.test,v 1.1 2006/01/03 07:40:58 mturon Exp $
+
+SUBDIRS = Test
+
+all: mica2 micaz mica2dot 
+
+mica2: here
+	@for i in $(SUBDIRS); do \
+	  if [ -d $$i ]; then \
+	    if [ ! -d Suite ]; then \
+	  	mkdir Suite Suite/mica2 Suite/mica2dot Suite/micaz; \
+	    fi; \
+	    if [ -f $$i/Makefile ]; then \
+		rm $$i/build/mica2/*.exe; \
+		$(MAKE) -C $$i -f ../Makefile.mica mica2; \
+		cp $$i/build/mica2/*.exe Suite/mica2; \
+	    else \
+		echo "***" no Makefile in directory: $(PWD)/$$i; \
+	    fi \
+	  else \
+		echo "***" skipping missing directory: $(PWD)/$$i; \
+	  fi; \
+	  rm Suite/mica2/main.exe; \
+	done
+
+micaz: here
+	@for i in $(SUBDIRS); do \
+	  if [ -d $$i ]; then \
+	    if [ ! -d Suite ]; then \
+	  	mkdir Suite Suite/mica2 Suite/mica2dot Suite/micaz; \
+	    fi; \
+	    if [ ! -d TestSuite ]; then \
+	  	mkdir TestSuite TestSuite/mica2 TestSuite/mica2dot TestSuite/micaz; \
+	    fi; \
+	    if [ -f $$i/Makefile ]; then \
+		rm $$i/build/micaz/*.exe; \
+		$(MAKE) -C $$i -f ../Makefile.mica micaz; \
+		cp $$i/build/micaz/*.exe TestSuite/micaz; \
+	    else \
+		echo "***" no Makefile in directory: $(PWD)/$$i; \
+	    fi \
+	  else \
+		echo "***" skipping missing directory: $(PWD)/$$i; \
+	  fi; \
+	  rm Suite/micaz/main.exe; \
+	done
+
+mica2dot: here
+	@for i in $(DOTDIRS); do \
+	  if [ -d $$i ]; then \
+	    if [ ! -d Suite ]; then \
+	  	mkdir Suite Suite/mica2 Suite/mica2dot Suite/micaz; \
+	    fi; \
+	    if [ -f $$i/Makefile ]; then \
+		rm $$i/build/mica2dot/*.exe; \
+		$(MAKE) -C $$i -f ../Makefile.mica2dot; \
+		cp $$i/build/mica2dot/*.exe Suite/mica2dot; \
+	    else \
+		echo "***" no Makefile in directory: $(PWD)/$$i; \
+	    fi \
+	  else \
+		echo "***" skipping missing directory: $(PWD)/$$i; \
+	  fi; \
+	  rm Suite/mica2dot/main.exe; \
+	done
+
+here: printdir FORCE
+
+printdir:
+	@echo "Building... $(PWD)"; 
+
+FORCE:

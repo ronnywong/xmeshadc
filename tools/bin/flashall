@@ -1,0 +1,132 @@
+#!/usr/bin/perl -w
+#
+# @brief    A script to flash a testbed of mib600
+# @author   Martin Turon
+# $Id: flashall,v 1.2.4.2 2007/01/31 00:36:37 barry Exp $
+#
+
+$image = shift();
+if (!$image) {
+
+   print <<END_OF_USAGE;
+Usage:        flashall image_file < port_list
+Description:  
+    Will flash [image_file] to all ports passed in [port_list] file.
+    [port_list] is a text file where each line is one of:
+         /dev/tty# or /dev/ttyS#, or ip ###.###.###.###
+    First line will be assigned node id == 0.
+    All remaining lines will be assigned node id == ###.
+
+END_OF_USAGE
+   exit;
+}
+$base = 0;
+while (defined($line = <STDIN>)) {
+    $port = $line;
+    $line =~ m|(.*?)([0-9]+)$|;
+#	print "$line == $1 == $2\n";
+	if ($2 ne "") {
+		$id = $2;
+		$port = $1.$2;
+	} else {
+		print "illegal device address.  Perhaps input file is in DOS format.  skipping.\n";
+	}
+	if ($base eq 0) {
+		$id   = 0;
+		$base = 1;
+    }
+	&flash_params($image, $id, $port); 
+
+	print "FLASH $image as node $id to $port\n";
+	print "\n$objcopy\n";
+	system "$objcopy";
+
+	print "$setid\n";
+	system "$setid";
+	print "$uisp\n";
+	$out = `$uisp`;
+	print $out;
+	if ($out =~ m/Fuse Extended Byte set to 0xff/go) {
+		print "SUCCESS\n";
+	} else {
+		print "ERROR\n";
+	}
+	print "==================\n\n";
+}
+
+
+
+#
+# Flash a mote over a TCP/IP socket connection.
+# @param image  Name of firmware to flash
+# @param nodeid Id number of node
+# @param addr   IP address or hostname to use
+#
+sub flaship {
+    my ($image, $nodeid, $addr) = @_;
+
+    $srecimage = $image;
+    $srecimage =~ s/exe/srec/;
+    
+    $objcopy = "avr-objcopy --output-target=srec $image $srecimage";
+    $setid   = "set-mote-id $srecimage $srecimage-$nodeid $nodeid";
+        $skt = "-dprog=stk500 -dhost=$port";
+    $dpart   =  &detect_mcu($skt);
+    $uisp    = "uisp -dprog=stk500 -dhost=$addr -dpart=$dpart --wr_fuse_h=0xd9 --wr_fuse_e=ff  --erase --upload if=$srecimage-$nodeid";  
+}
+
+#
+# Flash a mote over a serial UART connection.
+# @param image  Name of firmware to flash
+# @param nodeid Id number of node
+# @param addr   Com port to use
+#
+sub flashcom {
+    my ($image, $nodeid, $addr) = @_;
+
+    $srecimage = $image;
+    $srecimage =~ s/exe/srec/;
+    
+    $objcopy = "avr-objcopy --output-target=srec $image $srecimage";
+    $setid   = "set-mote-id $srecimage $srecimage-$nodeid $nodeid";
+    $mib = "-dprog=mib510 -dserial=$port";
+    $dpart   =  &detect_mcu($mib);
+    $uisp    = "uisp -dprog=mib510 -dserial=$addr -dpart=$dpart --wr_fuse_h=0xd9 --wr_fuse_e=ff  --erase --upload if=$srecimage-$nodeid";
+}
+
+sub flash_params {
+    my ($image, $nodeid, $port) = @_;
+
+    if ($port =~ m|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)|) {
+	&flaship($image, $id, $port); 
+    } else {
+	&flashcom($image, $id, $port); 
+    }
+}
+
+sub detect_mcu {
+	my ($mibTemp) = @_;
+	$uisp_read = "uisp -dpart=ATmega128 --rd_fuses $mibTemp";
+	unless(open READDPART, "$uisp_read 2>&1 |")
+	{
+			die " ERROR: could not find uisp\n";
+	} 
+	$errMsg ="";
+	$mcuType="";
+	while($out = <READDPART>){
+		$errMsg =$errMsg.$out;
+		if($out=~ /ATmega1281/){
+			$mcuType="ATmega1281";
+		}else{
+			if($out=~ /ATmega128/){
+				$mcuType="ATmega128";	
+			}
+		}
+	}
+	if(($mcuType eq "ATmega1281")||($mcuType eq "ATmega128")){
+		return $mcuType;
+	}else{
+		return "invalid";
+	}
+		
+}

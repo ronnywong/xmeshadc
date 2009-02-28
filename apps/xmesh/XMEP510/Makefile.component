@@ -1,0 +1,10 @@
+# $Id: Makefile.component,v 1.1.4.1 2007/03/07 18:33:56 abroad Exp $
+
+COMPONENT=XMEP510
+SENSORBOARD=mep510
+MSG_SIZE = 49
+PFLAGS += -DUSE_WATCHDOG
+INCLUDES = -I$(TOSROOT)/tos/sensorboards/micawb
+
+
+

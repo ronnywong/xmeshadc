@@ -1,0 +1,31 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: mica2b.target,v 1.2.2.1 2007/01/15 03:33:48 lwei Exp $
+
+PLATFORM = mica2b
+SENSORBOARD ?= micasb
+PROGRAMMER_PART ?= -dpart=ATmega1281 --wr_fuse_e=ff
+PFLAGS += -finline-limit=100000
+
+#CFLAGS += -I$(TOSDIR)/radio/cc1000hp  #moved to route.extra
+
+ifdef TINYOS_NP
+  ifeq ($(TINYOS_NP),BNP)
+    PFLAGS += -I%T/lib/Deluge
+    PFLAGS += -I%T/lib/Deluge/TOSBoot/include
+    BOOTLOADER ?= $(TOSDIR)/lib/Deluge/TOSBoot/bl_mica2.srec
+    AVR_FUSE_H ?= 0xd8
+  endif
+  ifeq ($(TINYOS_NP),XNP)
+    BOOTLOADER ?= $(XNP_DIR)/inpispm2.srec
+  endif
+endif
+
+AVR_FUSE_H ?= 0xd9
+AVR_FUSE_L ?= 0xff
+
+$(call TOSMake_include_platform,avr)
+
+mica2b: $(BUILD_DEPS)
+	@:
+
+

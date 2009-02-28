@@ -1,0 +1,12 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: sim.extra,v 1.1 2006/01/03 07:42:53 mturon Exp $
+
+ifdef SIM
+  ifeq ($(SIM),telos)
+    CFLAGS += -I%T/beta/TOSSIM-CC2420 -I%T/lib/CC2420Radio
+  endif
+  ifeq ($(SIM),micaz)
+    CFLAGS += -I%T/beta/TOSSIM-CC2420 -I%T/lib/CC2420Radio
+  endif
+endif
+

@@ -1,0 +1,354 @@
+#!/usr/bin/perl
+#
+# @file         buildall
+# @author       Martin Turon
+# @date         May 16, 2005
+# @brief        Filters out error messages from a TinyOS make command.
+#
+# @version    2005/5/16    mturon   Initial version
+# @n          2006/1/17    mturon   Extended with MoteWorks modules as default
+#
+# $Id: build,v 1.1.4.1 2006/04/20 07:18:07 lwei Exp $
+#
+
+$pos1=0;
+
+$InApp=0;
+$fmica2=0;
+$fmicaz=0;
+$fmica2dot=0;
+
+$| = 1;
+
+my $g_version = '$Id: build,v 1.1.4.1 2006/04/20 07:18:07 lwei Exp $';
+print "$g_version\n";
+
+$platform  = shift();
+$pos1=index($platform,"mica2",0);
+
+if($pos1>=0) 
+{
+	$fmica2=1;
+}
+$pos1=index($platform,"micaz",0);
+if($pos1>=0) 
+{
+	$fmicaz=1;
+}
+$pos1=index($platform,"mica2dot",0);
+if($pos1>=0) 
+{
+	$fmica2dot=1;
+}
+
+if($fmica2==0 && $fmicaz==0 && $fmica2dot==0)
+{
+$fmica2=1;$fmicaz=1;$fmica2dot=1;
+}
+chomp($current_pwd = `pwd`);
+
+lc($current_pwd);
+
+# chdir("/opt/tinyos-1.xdev/contrib/xbow/apps/XMesh");
+
+# If no file loaded, use this default...
+$tree = "/opt/MoteWorks/apps";
+
+$pos1=index($current_pwd,$tree,0);
+if($pos1>=0)
+{
+	$InApp=1;
+}
+
+%modules_mica2 = (
+        ## General apps for MICA2
+        "$tree/xmesh/Blink"=>"make mica2",
+        "$tree/xmesh/CountReceive"=>"make mica2",
+        "$tree/xmesh/CountSend"=>"make mica2",
+        "$tree/xmesh/XSniffer"=>"make mica2",
+
+        ## XMesh apps for MICA2
+        "$tree/xmesh/XMeshBase"=>"make mica2 route,hp",
+
+        "$tree/xmesh/XMDA100"=>"make mica2 route,hp",
+        "$tree/xmesh/XMDA300"=>"make mica2 route,hp",
+        "$tree/xmesh/XMDA320"=>"make mica2 route,hp",
+        "$tree/xmesh/XMDA325"=>"make mica2 route,hp",
+
+        "$tree/xmesh/XMTS101"=>"make mica2 route,hp",
+        "$tree/xmesh/XMTS310"=>"make mica2 route,hp",
+        "$tree/xmesh/XMTS410"=>"make mica2 route,hp",
+        "$tree/xmesh/XMTS420"=>"make mica2 route,hp",
+        "$tree/xmesh/XMTS450"=>"make mica2 route,hp",
+
+        "$tree/xmesh/XMEP410"=>"make mica2 route,hp",
+        "$tree/xmesh/XMSP410"=>"make mica2 route,hp",
+        "$tree/xmesh/XMTP400"=>"make mica2 route,hp",
+
+        "$tree/xmesh/XMeshBase"=>"make mica2 route,lp",
+
+        "$tree/xmesh/XMDA100"=>"make mica2 route,lp",
+        "$tree/xmesh/XMDA300"=>"make mica2 route,lp",
+        "$tree/xmesh/XMDA320"=>"make mica2 route,lp",
+        "$tree/xmesh/XMDA325"=>"make mica2 route,lp",
+
+        "$tree/xmesh/XMTS101"=>"make mica2 route,lp",
+        "$tree/xmesh/XMTS310"=>"make mica2 route,lp",
+        "$tree/xmesh/XMTS410"=>"make mica2 route,lp",
+        "$tree/xmesh/XMTS420"=>"make mica2 route,lp",
+        "$tree/xmesh/XMTS450"=>"make mica2 route,lp",
+
+        "$tree/xmesh/XMEP410"=>"make mica2 route,lp",
+        "$tree/xmesh/XMSP410"=>"make mica2 route,lp",
+        "$tree/xmesh/XMTP400"=>"make mica2 route,lp",
+
+
+        "$tree/tutorials/XSensorTutorial.bare"=>"make mica2",
+        "$tree/tutorials/XSensorTutorial.bare_soln"=>"make mica2",
+        "$tree/tutorials/XSensorTutorial.debug"=>"make mica2",
+        "$tree/tutorials/XSensorTutorial.debug_soln"=>"make mica2",
+        "$tree/tutorials/XSensorTutorial.rf"=>"make mica2",
+        "$tree/tutorials/XSensorTutorial.rf_soln"=>"make mica2",
+
+        ## XSensor apps for MICA2
+        "$tree/xsensor/XSensorMDA100"=>"make mica2",
+        "$tree/xsensor/XSensorMDA300"=>"make mica2",
+        "$tree/xsensor/XSensorMDA320"=>"make mica2",
+        "$tree/xsensor/XSensorMDA325"=>"make mica2",
+
+        "$tree/xsensor/XSensorMTS101"=>"make mica2",
+        "$tree/xsensor/XSensorMTS300"=>"make mica2",
+        "$tree/xsensor/XSensorMTS400"=>"make mica2",
+        "$tree/xsensor/XSensorMTS410"=>"make mica2",
+        "$tree/xsensor/XSensorMTS450"=>"make mica2",
+
+        "$tree/xsensor/XSensorMEP410"=>"make mica2",
+        "$tree/xsensor/XSensorMTP400"=>"make mica2",
+
+        ## XSensor apps for MICAz
+        "$tree/xsensor/XSensorMDA100"=>"make mica2",
+        "$tree/xsensor/XSensorMDA300"=>"make mica2",
+        "$tree/xsensor/XSensorMDA320"=>"make mica2",
+        "$tree/xsensor/XSensorMDA325"=>"make mica2",
+
+        "$tree/xsensor/XSensorMTS101"=>"make mica2",
+        "$tree/xsensor/XSensorMTS300"=>"make mica2",
+        "$tree/xsensor/XSensorMTS400"=>"make mica2",
+        "$tree/xsensor/XSensorMTS410"=>"make mica2",
+        "$tree/xsensor/XSensorMTS450"=>"make mica2",
+
+        "$tree/xsensor/XSensorMEP410"=>"make mica2",
+        "$tree/xsensor/XSensorMTP400"=>"make mica2",
+
+);
+%modules_micaz = (
+        "$tree/xmesh/Blink"=>"make micaz",
+        "$tree/xmesh/CountReceive"=>"make micaz",
+        "$tree/xmesh/CountSend"=>"make micaz",
+        "$tree/xmesh/XSniffer"=>"make micaz",
+        
+        ## XMesh apps for MICAz
+        "$tree/xmesh/XMeshBase"=>"make micaz route,hp",
+
+        "$tree/xmesh/XMDA100"=>"make micaz route,hp",
+        "$tree/xmesh/XMDA300"=>"make micaz route,hp",
+        "$tree/xmesh/XMDA320"=>"make micaz route,hp",
+        "$tree/xmesh/XMDA325"=>"make micaz route,hp",
+
+        "$tree/xmesh/XMTS101"=>"make micaz route,hp",
+        "$tree/xmesh/XMTS310"=>"make micaz route,hp",
+        "$tree/xmesh/XMTS410"=>"make micaz route,hp",
+        "$tree/xmesh/XMTS420"=>"make micaz route,hp",
+        "$tree/xmesh/XMTS450"=>"make micaz route,hp",
+
+        "$tree/xmesh/XMTP400"=>"make micaz route,hp",
+
+        "$tree/xmesh/XMDA100"=>"make micaz route,lp",
+        "$tree/xmesh/XMDA300"=>"make micaz route,lp",
+        "$tree/xmesh/XMDA320"=>"make micaz route,lp",
+        "$tree/xmesh/XMDA325"=>"make micaz route,lp",
+
+        "$tree/xmesh/XMTS101"=>"make micaz route,lp",
+        "$tree/xmesh/XMTS310"=>"make micaz route,lp",
+        "$tree/xmesh/XMTS410"=>"make micaz route,lp",
+        "$tree/xmesh/XMTS450"=>"make micaz route,lp",
+
+        "$tree/xmesh/XMTP400"=>"make micaz route,lp",
+
+
+        ## Tutorial apps for MICAz
+        "$tree/tutorials/XSensorTutorial.bare"=>"make micaz",
+        "$tree/tutorials/XSensorTutorial.bare_soln"=>"make micaz",
+        "$tree/tutorials/XSensorTutorial.debug"=>"make micaz",
+        "$tree/tutorials/XSensorTutorial.debug_soln"=>"make micaz",
+        "$tree/tutorials/XSensorTutorial.rf"=>"make micaz",
+        "$tree/tutorials/XSensorTutorial.rf_soln"=>"make micaz",
+
+        "$tree/xsensor/XSensorMDA100"=>"make micaz",
+        "$tree/xsensor/XSensorMDA300"=>"make micaz",
+        "$tree/xsensor/XSensorMDA320"=>"make micaz",
+        "$tree/xsensor/XSensorMDA325"=>"make micaz",
+
+        "$tree/xsensor/XSensorMTS101"=>"make micaz",
+        "$tree/xsensor/XSensorMTS300"=>"make micaz",
+        "$tree/xsensor/XSensorMTS400"=>"make micaz",
+        "$tree/xsensor/XSensorMTS450"=>"make micaz",
+
+        "$tree/xsensor/XSensorMTP400"=>"make micaz",
+
+);
+%modules_mica2dot = (
+
+        ## XMesh apps for MICA2DOT
+        "$tree/xmesh/XMTS510"=>"make mica2dot route,hp",
+        "$tree/xmesh/XMEP510"=>"make mica2dot route,hp",
+        "$tree/xmesh/XMDA500"=>"make mica2dot route,hp",
+
+        "$tree/xmesh/XMTS510"=>"make mica2dot route,lp",
+        "$tree/xmesh/XMEP510"=>"make mica2dot route,lp",
+        "$tree/xmesh/XMDA500"=>"make mica2dot route,lp",
+        
+        "$tree/xsensor/XSensorMTS510"=>"make mica2dot",
+        "$tree/xsensor/XSensorMEP510"=>"make mica2dot",
+        "$tree/xsensor/XSensorMDA500"=>"make mica2dot",
+
+);
+
+$current_pwd=lc($current_pwd);
+$tmpdir="";
+if($fmica2>0)
+{
+	foreach $directory (keys(%modules_mica2)) {
+	   $tmpdir=lc($directory);
+	   if($InApp > 0)
+	   {
+	   	$pos1=index($tmpdir,$current_pwd);
+		##If curr dir is in $tree, then just build those apps in curr dir.
+	   	if($pos1 < 0)
+	   	{
+	   		next;
+	   	}
+	   }
+	   $makeargs = $modules_mica2{$directory};
+	   print("In $directory : ");
+	   chdir($directory);
+	   print("   $makeargs\n");
+	   &build_run_make($makeargs);
+	   chdir($directory."/build/mica2");
+	   if(($pos1=index($makeargs,"hp"))>=0)
+	   {
+	   	rename "main.exe","main_903_hp.exe";
+	   }
+	   if(($pos1=index($makeargs,"lp"))>=0)
+	   {
+	   	rename "main.exe","main_903_lp.exe";
+	   }
+	   
+	}
+}
+
+if($fmicaz>0)
+{
+	foreach $directory (keys(%modules_micaz)) {
+	   $tmpdir=lc($directory);
+	   if($InApp > 0)
+	   {
+	   	$pos1=index($tmpdir,$current_pwd);
+		##If curr dir is in $tree, then just build those apps in curr dir.
+	   	if($pos1 < 0)
+	   	{
+	   		next;
+	   	}
+	   }
+	   $makeargs = $modules_micaz{$directory};
+	   print("In $directory : ");
+	   chdir($directory);
+	   print("   $makeargs\n");
+	   &build_run_make($makeargs);
+	   chdir($directory."/build/micaz");
+	   if(($pos1=index($makeargs,"hp"))>=0)
+	   {
+	   	rename "main.exe","main_2420_hp.exe";
+	   }
+	   if(($pos1=index($makeargs,"lp"))>=0)
+	   {
+	   	rename "main.exe","main_2420_lp.exe";
+	   }
+	   
+	}
+}
+
+if($fmica2dot>0)
+{
+	foreach $directory (keys(%modules_mica2dot)) {
+	   $tmpdir=lc($directory);
+	   if($InApp > 0)
+	   {
+	   	$pos1=index($tmpdir,$current_pwd);
+		##If curr dir is in $tree, then just build those apps in curr dir.
+	   	if($pos1 < 0)
+	   	{
+	   		next;
+	   	}
+	   }
+	   $makeargs = $modules_mica2dot{$directory};
+	   print("In $directory : ");
+	   chdir($directory);
+	   print("   $makeargs\n");
+	   &build_run_make($makeargs);
+	   chdir($directory."/build/mica2dot");
+	   if(($pos1=index($makeargs,"hp"))>=0)
+	   {
+	   	rename "main.exe","main_903_hp.exe";
+	   }
+	   if(($pos1=index($makeargs,"lp"))>=0)
+	   {
+	   	rename "main.exe","main_903_lp.exe";
+	   }
+	   
+	}
+}
+
+#
+# Builds the given make command, and parses the error output
+#
+sub build_run_make {
+    $make_cmd = $_[0];
+    #if ($make_cmd==0) {
+    #	$make_cmd = @ARGV;
+    #}
+    #print "make $make_cmd 2>&1 |";
+    unless($pid=(open MAKE, "make $make_cmd 2>&1 |" ))
+    {
+	die "ERROR: could not execute xlisten";
+    }
+
+    while (defined($line = <MAKE>)) {
+	if (($line =~ m/.*make freq*/) ||
+	    ($line =~ m/.*make.2.*/) ||
+	    ($line =~ m/.*compiling.*binary.*/) ||
+	    ($line =~ m/.*bytes in ROM.*/) ||
+	    ($line =~ m/.*bytes in RAM.*/) ||
+	    ($line =~ m/.*compiled.*/))
+	{
+	    print $line;
+	}
+	if ($line =~ m/^(.*):([0-9]*):(.*)/) {
+	    $file = $1;
+	    $lnum = $2;
+	    $err  = $3;
+	    if ($file =~ m/In file/) {
+		next;
+	    }
+	    if ($err =~ m/(.*warning:)(.*)/) {
+		$type = "WARNING";
+		$err  = $2;
+	    } else {
+		$type = "ERROR"; 
+	    }
+	    printf("$file:$lnum: $type:$err\n");
+	}
+    }
+}
+
+

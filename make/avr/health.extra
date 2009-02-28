@@ -1,0 +1,28 @@
+#
+# FILE:    health.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# XM_Health_Update - Specify Health update interval
+#
+#	health,<health>	
+#
+#	health=<health>	where health(4 Byte in binary, in ms) 
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: health.extra,v 1.1 2006/01/15 05:10:57 husq Exp $
+#
+
+ifeq ($(HEALTH),)
+    HEALTH=10
+endif
+
+ifeq ($(HEALTH),0)
+	PFLAGS += -DCONFIG_NO_HEALTH_PKG
+else
+  PFLAGS += -DHEALTH_UPDATE_INTERVAL=$(HEALTH)
+endif
+
+
+		

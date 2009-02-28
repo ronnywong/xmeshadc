@@ -1,0 +1,4 @@
+COMPONENT=CntToLedsAndRfm
+SENSORBOARD=micasb
+
+INCLUDES= -I%T/lib/Counters

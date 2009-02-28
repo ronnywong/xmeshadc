@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	
+	<XFieldExtractor name="MTS450 Sensor Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humid" byteoffset="11" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humid" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="13" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="gas" byteoffset="15" length="2" type="uint16">
+				<XConversion function="((x/4095)*2.5*1000000)/(800.0*10.0*5.62*0.07)" returntype="float">
+					<XConvParam variablename="x" fieldname="gas" type="float"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_XUART or AMTYPE_XSENSOR
+					The Byte offsets defined above assume that there is no multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x92"/>
+				</XCond>				
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS450 [sensor data converted to engineering units]:\n   health:     node id=%s		battery:  = %s mv \n   humid: =%f %% 		  tempurature: =%f degC \n   CO = %f ppm"/>
+				<XDSParam name="printfields" value="nodeid,voltage,humid,humtemp,gas"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mts450_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mts450_results ( result_time timestamp without time zone,nodeid integer, parent integer,voltage integer, humtemp integer, humid integer,gas integer)"/>				
+				<XDSParam name="tablename_2" value="mts450_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mts450_results_l ( result_time timestamp without time zone,nodeid integer, parent integer,voltage integer, humtemp integer, humid integer,gas integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mts450_results AS ON INSERT TO mts450_results DO ( DELETE FROM mts450_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mts450_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mts450_results (result_time,nodeid,voltage,humtemp,humid,gas) values (now(),%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,voltage,humtemp,humid,gas"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="humid" value="[0,100]"/>
+				<XDSParam name="humtemp" value="[-5,45]"/>
+				<XDSParam name="gas" value="[0,1500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

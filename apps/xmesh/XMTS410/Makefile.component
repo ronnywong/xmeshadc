@@ -1,0 +1,6 @@
+# $Id: Makefile.component,v 1.1.4.1 2006/12/19 13:03:00 chenrl Exp $
+
+COMPONENT=XMTS410
+SENSORBOARD=mts410
+MSG_SIZE=55
+

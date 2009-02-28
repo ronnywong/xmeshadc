@@ -1,0 +1,64 @@
+<!ELEMENT XServeConfig (XFieldExtractor)+>
+
+<!ELEMENT XFieldExtractor (XFields,XFilter,XDataSinks)>
+<!ATTLIST XFieldExtractor name CDATA #REQUIRED>
+<!ATTLIST XFieldExtractor order CDATA #REQUIRED>
+
+
+<!ELEMENT XFields (XField|XBitField|XUnionField)+>
+<!ELEMENT XField (XConversion)?>
+<!ATTLIST XField name CDATA #REQUIRED>
+<!ATTLIST XField byteoffset CDATA #REQUIRED>
+<!ATTLIST XField length CDATA #REQUIRED>
+<!ATTLIST XField type (byte|char|short|int|long|uint8|uint16|uint32|uint64|string|raw|float|double) #REQUIRED>
+<!ATTLIST XField specialtype (nodeid|parentid|boardid) #IMPLIED>
+
+<!ELEMENT XConversion (XConvParam)*>
+<!ATTLIST XConversion function CDATA #REQUIRED>
+<!ATTLIST XConversion returntype (byte|char|short|int|long|uint8|uint16|uint32|uint64|string|raw|float|double) #REQUIRED>
+
+<!ELEMENT XConvParam EMPTY>
+<!ATTLIST XConvParam variablename CDATA #REQUIRED>
+<!ATTLIST XConvParam fieldname CDATA #REQUIRED>
+<!ATTLIST XConvParam type (byte|char|short|int|long|uint8|uint16|uint32|uint64|string|raw|float|double) #REQUIRED>
+
+
+
+<!ELEMENT XBitField (XConversion)?>
+<!ATTLIST XBitField name CDATA #REQUIRED>
+<!ATTLIST XBitField byteoffset CDATA #REQUIRED>
+<!ATTLIST XBitField length CDATA #REQUIRED>
+<!ATTLIST XBitField type (byte|char|short|int|long|uint8|uint16|uint32|uint64|string|raw|float|double) #REQUIRED>
+<!ATTLIST XBitField specialtype (nodeid|parentid|boardid) #IMPLIED>
+<!ATTLIST XBitField mask CDATA #REQUIRED>
+<!ATTLIST XBitField shift CDATA #REQUIRED>
+
+<!ELEMENT XUnionField EMPTY>
+<!ATTLIST XUnionField name CDATA #REQUIRED>
+<!ATTLIST XUnionField type (byte|char|short|int|long|uint8|uint16|uint32|uint64|string|raw|float|double) #REQUIRED>
+<!ATTLIST XUnionField optor CDATA #REQUIRED>
+<!ATTLIST XUnionField specialtype (nodeid|parentid|boardid) #IMPLIED>
+<!ATTLIST XUnionField leftname CDATA #REQUIRED>
+<!ATTLIST XUnionField rightname CDATA #REQUIRED>
+
+<!ELEMENT XDataSinks (XDataSink)*>
+<!ELEMENT XDataSink (XDSParam)+>
+<!ATTLIST XDataSink name CDATA #REQUIRED>
+
+<!ELEMENT XDSParam EMPTY>
+<!ATTLIST XDSParam name CDATA #REQUIRED>
+<!ATTLIST XDSParam value CDATA #REQUIRED>
+
+
+<!ELEMENT XFilter (XCondAnd|XCondOr|XCondNot|XCond)+>
+<!ELEMENT XCondAnd (XCondAnd|XCondOr|XCondNot|XCond)+>
+<!ELEMENT XCondOr (XCondAnd|XCondOr|XCondNot|XCond)+>
+<!ELEMENT XCondNot (XCondAnd|XCondOr|XCondNot|XCond)>
+<!ELEMENT XCond (XFilterParam)*>
+<!ATTLIST XCond name CDATA #REQUIRED>
+
+<!ELEMENT XFilterParam EMPTY>
+<!ATTLIST XFilterParam name CDATA #REQUIRED>
+<!ATTLIST XFilterParam value CDATA #REQUIRED>
+
+

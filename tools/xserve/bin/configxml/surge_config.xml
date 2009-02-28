@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="Surge Config XML" order="1">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="15" length="2" type="uint16" specialtype="parentid"/>
+			<XBitField name="vref" byteoffset="17" length="4" type="uint32" mask="0xFF800000" shift="23">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="vref" type="float"/>
+				</XConversion>
+			</XBitField>
+			<XBitField name="epoch" byteoffset="17" length="4" type="uint32" mask="0x007FFFFF" shift="0"/>
+			<XField name="light" byteoffset="21" length="1" type="uint8">
+				<XConversion function="((y * (1252352/x) / 1023)* 4)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="vref" type="float"/>
+					<XConvParam variablename="y" fieldname="light" type="uint8"/>
+				</XConversion>
+			</XField>
+			<XField name="thermistor" byteoffset="22" length="1" type="uint8">
+				<XConversion function="((1/(.001307050 + 0.000214381 * log( (10000 * (1023-(x*4)))/(x*4)   ) + 0.000000093 * (log( (10000 * (1023-(x*4)))/(x*4) )^3))) - 273.15)" returntype="float">
+					<XConvParam variablename="x" fieldname="thermistor" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="magX" byteoffset="23" length="1" type="uint8">
+				<XConversion function="(x*4) / (1.023*2.262*3.2)" returntype="float">
+					<XConvParam variablename="x" fieldname="magX" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="magY" byteoffset="24" length="1" type="uint8">
+				<XConversion function="(x*4) / (1.023*2.262*3.2)" returntype="float">
+					<XConvParam variablename="x" fieldname="magY" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="accelX" byteoffset="25" length="1" type="uint8">
+				<XConversion function="1000.0 * (1.0 - (500 - (x*4))/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accelX" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="accelY" byteoffset="26" length="1" type="uint8">
+				<XConversion function="1000.0 * (1.0 - (500 - (x*4))/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accelY" type="uint16"/>					
+				</XConversion>
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCond name="IsEqual">
+				<XFilterParam name="fieldname" value="amtype"/>
+				<XFilterParam name="fieldvalue" value="17"/>
+			</XCond>
+		</XFilter>
+		<XDataSinks>
+		
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="SURGE [sensor data converted to engineering units]:\n   health:  node id=%s  parent=%s  seq_no=%s\n   battery     = %s mv\n   temperature = %s degC\n   light:      = %s ADC mv\n   AccelX:     = %s g,         AccelY: = %s g\n   MagX:       = %s mgauss, MagY:   = %s mgauss "/>
+				<XDSParam name="printfields" value="nodeid,parent,epoch,vref,thermistor,light,accelX,accelY,magX,magY"/>
+			</XDataSink>
+
+			<XDataSink name="Generic File Datasink">				
+				<XDSParam name="rawfilename" value="/opt/tinyos-1.x/raw_surge_data.txt"/>
+				<XDSParam name="parsedfilename" value="/opt/tinyos-1.x/parsed_surge_data.txt"/>
+				<XDSParam name="convertedfilename" value="/opt/tinyos-1.x/converted_surge_data.txt"/>				
+				<XDSParam name="delim" value=","/>
+				<XDSParam name="header" value="yes"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="surge_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE surge_results ( result_time timestamp without time zone,nodeid integer,parent integer,epoch integer,voltage integer,temp integer,light integer,accel_x integer,accel_y integer,mag_x integer,mag_y integer)"/>				
+				<XDSParam name="tablename_2" value="surge_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE surge_results ( result_time timestamp without time zone,nodeid integer,parent integer,epoch integer,voltage integer,temp integer,light integer,accel_x integer,accel_y integer,mag_x integer,mag_y integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_surge_results AS ON INSERT TO surge_results DO ( DELETE FROM surge_results_l WHERE nodeid = NEW.nodeid;INSERT INTO surge_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into surge_results (result_time,nodeid,parent,epoch,voltage,temp,light,accel_x,accel_y,mag_x,mag_y) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,epoch,vref,thermistor,light,accelX,accelY,magX,magY"/>
+			</XDataSink>
+			
+		</XDataSinks>
+	</XFieldExtractor>
+</XServeConfig>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMEP410 Multihop Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="seqno" byteoffset="16" length="2" type="uint16"/>
+			<XField name="voltage" byteoffset="18" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humidity" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humidity" type="float"/>					
+					<XConvParam variablename="y" fieldname="temp_hum" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="temp_hum" byteoffset="22" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="temp_hum" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="inthum" byteoffset="24" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="uint16">
+					<XConvParam variablename="x" fieldname="inthum" type="float"/>					
+					<XConvParam variablename="y" fieldname="inttemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="inttemp" byteoffset="26" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="inttemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="par_top" byteoffset="28" length="2" type="uint16">
+				<XConversion function="(1252352*x)/(y*1024)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="par_top" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="tsr_top" byteoffset="30" length="2" type="uint16">
+				<XConversion function="(1252352*x)/(y*1024)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="tsr_top" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="par_bottom" byteoffset="32" length="2" type="uint16">
+				<XConversion function="(1252352*x)/(y*1024)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="par_bottom" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="tsr_bottom" byteoffset="34" length="2" type="uint16">
+				<XConversion function="(1252352*x)/(y*1024)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="tsr_bottom" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="temp_pr" byteoffset="40" length="2" type="uint16">
+				<XConversion function="(200.0+(x-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))*((b &amp; 63)+50.0)/1024.0)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="temp_pr" type="float"/>					
+					<XConvParam variablename="a" fieldname="calibW0" type="uint16"/>					
+					<XConvParam variablename="b" fieldname="calibW1" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="pressure" byteoffset="42" length="2" type="uint16">
+				<XConversion function="((((a &gt;&gt; 1)+(d &gt;&gt; 6)*(y-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))/1024.0+24576)*(x-7168.0))/16384 - ((((c &amp; 63) &lt;&lt; 6) | (d &amp; 63))*4 + ((c &gt;&gt; 6)-512.0)*(y-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))/1024))/32.0 +250.0" returntype="float">
+					<XConvParam variablename="x" fieldname="pressure" type="float"/>					
+					<XConvParam variablename="y" fieldname="temp_pr" type="float"/>					
+					<XConvParam variablename="a" fieldname="calibW0" type="uint16"/>					
+					<XConvParam variablename="b" fieldname="calibW1" type="uint16"/>					
+					<XConvParam variablename="c" fieldname="calibW2" type="uint16"/>					
+					<XConvParam variablename="d" fieldname="calibW3" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="calibW0" byteoffset="44" length="2" type="uint16"/>
+			<XField name="calibW1" byteoffset="46" length="2" type="uint16"/>
+			<XField name="calibW2" byteoffset="48" length="2" type="uint16"/>
+			<XField name="calibW3" byteoffset="50" length="2" type="uint16"/>
+			<XField name="calibB0" byteoffset="44" length="1" type="uint8"/>
+			<XField name="calibB1" byteoffset="45" length="1" type="uint8"/>
+			<XField name="calibB2" byteoffset="46" length="1" type="uint8"/>
+			<XField name="calibB3" byteoffset="47" length="1" type="uint8"/>
+			<XField name="calibB4" byteoffset="48" length="1" type="uint8"/>
+			<XField name="calibB5" byteoffset="49" length="1" type="uint8"/>
+			<XField name="calibB6" byteoffset="50" length="1" type="uint8"/>
+			<XField name="calibB7" byteoffset="51" length="1" type="uint8"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x8A"/>
+				</XCond>				
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MEP410 [sensor data converted to engineering units]:\n   health:    id         = %s  \n   battery:              = %s mv     \n   humidity [external]   = %s%%, Temp [external]   = %s degC \n   humidity [internal]   = %s%%, Temp [internal]   = %s degC \n   IntersemaTemperature: = %s degC \n   IntersemaPressure:    = %s mbar \n   Photo[1..4]:          = %smv, %smv, %smv, %smv "/>
+				<XDSParam name="printfields" value="nodeid,voltage,inthum,inttemp,humidity,temp_hum,temp_pr,pressure,par_top,tsr_top,par_bottom,tsr_bottom"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mep_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mep_results ( result_time timestamp without time zone,epoch integer,nodeid integer,parent integer,voltage integer,thermister integer,humidity integer,temp_hum integer,inthum integer,inttemp integer,par_bottom integer,tsr_bottom integer,par_top integer,tsr_top integer,temp_pr integer,pressure integer,board_id integer)"/>				
+				<XDSParam name="tablename_2" value="mep_results_l"/>
+				<XDSParam name="createsql_2" value="CREATE TABLE mep_results ( result_time timestamp without time zone,epoch integer,nodeid integer,parent integer,voltage integer,thermister integer,humidity integer,temp_hum integer,inthum integer,inttemp integer,par_bottom integer,tsr_bottom integer,par_top integer,tsr_top integer,temp_pr integer,pressure integer,board_id integer)"/>				
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mep_results AS ON INSERT TO mep_results DO ( DELETE FROM mep_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mep_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mep_results (result_time,nodeid,parent,epoch,voltage,humidity,temp_hum,inthum,inttemp,par_top,tsr_top,par_bottom,tsr_bottom,temp_pr,pressure,board_id) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>				
+				<XDSParam name="insertfields_2" value="nodeid,parent,seqno,voltage,humidity,temp_hum,inthum,inttemp,par_top,tsr_top,par_bottom,tsr_bottom,temp_pr,pressure,board_id"/>				
+				<XDSParam name="tablename_3" value="mep_results_i"/>
+				<XDSParam name="createsql_3" value="CREATE TABLE mep_results_i ( nodeid integer ,x_coord integer, y_coord integer, z_coord integer,mote_name text, calib bytea , board_id integer)"/>				
+				<XDSParam name="updatesql_3" value="update mep_results_i  set calib='\\%o\\%o\\%o\\%o\\%o\\%o\\%o\\%o' where nodeid=%i"/>
+				<XDSParam name="updatefields_3" value="calibB0,calibB1,calibB2,calibB3,calibB4,calibB5,calibB6,calibB7,nodeid"/>
+				<XDSParam name="insertsql_3" value="INSERT into mep_results_i ( nodeid,calib,board_id) values (%i,'\\%o\\%o\\%o\\%o\\%o\\%o\\%o\\%o',%i)"/>
+				<XDSParam name="insertfields_3" value="nodeid,calibB0,calibB1,calibB2,calibB3,calibB4,calibB5,calibB6,calibB7,board_id"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="humidity" value="[0,100]"/>
+				<XDSParam name="temp_hum" value="[-5,45]"/>
+				<XDSParam name="inthum" value="[0,100]"/>
+				<XDSParam name="inthum" value="[-5,45]"/>
+				<XDSParam name="par_top" value="[0,500]"/>
+				<XDSParam name="tsr_top" value="[0,500]"/>
+				<XDSParam name="par_bottom" value="[0,500]"/>
+				<XDSParam name="tsr_bottom" value="[0,500]"/>
+				<XDSParam name="temp_pr" value="[-5,45]"/>
+				<XDSParam name="pressure" value="[900,1100]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

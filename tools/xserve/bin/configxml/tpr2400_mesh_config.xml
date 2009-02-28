@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMDA100 Multihop Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(3000*x/4096)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="intemp" byteoffset="18" length="2" type="uint16"/>
+			<XField name="humidity" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humidity" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="22" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="tsrdata" byteoffset="24" length="2" type="uint16">
+				<XConversion function="(3000*x/4096)*y/4096" returntype="uint16">
+					<XConvParam variablename="x" fieldname="tsrdata" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="pardata" byteoffset="26" length="2" type="uint16">
+				<XConversion function="(3000*x/4096)*y/4096" returntype="uint16">
+					<XConvParam variablename="x" fieldname="pardata" type="float"/>					
+					<XConvParam variablename="y" fieldname="voltage" type="float"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x40"/>
+				</XCond>				
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="TPR2400 [sensor data converted to engineering units]:\n	health:	node id	= %s\n	battery:	= %s mv \n	humidity:	= %f%% \n	temp:		= %f degC \n	PAR:		= %s mv \n	TSR:		= %s mv "/>
+				<XDSParam name="printfields" value="nodeid,voltage,humidity,humtemp,pardata,tsrdata"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="tpr2400_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE tpr2400_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, intemp integer, humidity integer, humtemp integer,tsrdata integer, pardata integer )"/>				
+				<XDSParam name="tablename_2" value="tpr2400_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE tpr2400_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, intemp integer, humidity integer, humtemp integer,tsrdata integer, pardata integer )"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_tpr2400_results AS ON INSERT TO tpr2400_results DO ( DELETE FROM mda100_results_l WHERE nodeid = NEW.nodeid;INSERT INTO tpr2400_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into tpr2400_results (result_time,nodeid,voltage,intemp,humidity,humtemp,tsrdata,pardata) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,voltage,intemp,humidity,humtemp,pardata,tsrdata"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

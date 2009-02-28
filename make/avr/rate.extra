@@ -1,0 +1,22 @@
+#
+# FILE:    rate.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# Provides the main timer rate of the application
+#
+#	rate,<rate>	
+#
+#	RATE=<rate>	where rate is in ms.
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: rate.extra,v 1.1 2006/01/15 05:10:58 husq Exp $
+#
+
+ifeq ($(RATE),)
+    RATE=1000
+endif
+
+PFLAGS += -DAPP_RATE=$(RATE)
+		

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMDA300 Multihop PK1 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="adc0" byteoffset="9" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc0" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc1" byteoffset="11" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc1" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc2" byteoffset="13" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc2" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc3" byteoffset="15" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc3" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc4" byteoffset="17" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc4" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc5" byteoffset="19" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc5" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc6" byteoffset="21" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc6" type="float"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x81"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x01"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   adc chan 0: voltage=%s mV\n   adc chan 1: voltage=%s mV\n   adc chan 2: voltage=%s mV\n   adc chan 3: voltage=%s mV\n   adc chan 4: voltage=%s mV\n   adc chan 5: voltage=%s mV\n   adc chan 6: voltage=%s mV"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,adc0,adc1,adc2,adc3,adc4,adc5,adc6"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="adc0" value="[0,3200]"/>
+				<XDSParam name="adc1" value="[0,3200]"/>
+				<XDSParam name="adc2" value="[0,3200]"/>
+				<XDSParam name="adc3" value="[0,3200]"/>
+				<XDSParam name="adc4" value="[0,3200]"/>
+				<XDSParam name="adc5" value="[0,3200]"/>
+				<XDSParam name="adc6" value="[0,3200]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMDA300 Multihop PK2 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="adc7" byteoffset="9" length="2" type="uint16">
+				<XConversion function="5*((625*x/512)-2500)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc7" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc8" byteoffset="11" length="2" type="uint16">
+				<XConversion function="5*((625*x/512)-2500)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc8" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc9" byteoffset="13" length="2" type="uint16">
+				<XConversion function="5*((625*x/512)-2500)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc9" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc10" byteoffset="15" length="2" type="uint16">
+				<XConversion function="5*((625*x/512)-2500)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc10" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc11" byteoffset="17" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc11" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc12" byteoffset="19" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc12" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc13" byteoffset="21" length="2" type="uint16">
+				<XConversion function="x*625/1024" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc13" type="float"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x82"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x02"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   adc chan 7: voltage=%s mV\n   adc chan 8: voltage=%s mV\n   adc chan 9: voltage=%s mV\n   adc chan 10: voltage=%s mV\n   adc chan 11: voltage=%s mV\n   adc chan 12: voltage=%s mV\n   adc chan 13: voltage=%s mV"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,adc7,adc8,adc9,adc10,adc11,adc12,adc13"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="adc7" value="[0,2500]"/>
+				<XDSParam name="adc8" value="[0,2500]"/>
+				<XDSParam name="adc9" value="[0,2500]"/>
+				<XDSParam name="adc10" value="[0,2500]"/>
+				<XDSParam name="adc11" value="[0,3200]"/>
+				<XDSParam name="adc12" value="[0,3200]"/>
+				<XDSParam name="adc13" value="[0,3200]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMDA300 XSENSOR PK3 Config XML" order="5">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="digi0" byteoffset="9" length="2" type="uint16"/>
+			<XField name="digi1" byteoffset="11" length="2" type="uint16"/>
+			<XField name="digi2" byteoffset="13" length="2" type="uint16"/>
+			<XField name="digi3" byteoffset="15" length="2" type="uint16"/>
+			<XField name="digi4" byteoffset="17" length="2" type="uint16"/>
+			<XField name="digi5" byteoffset="19" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x83"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x03"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   digi 0: =%s \n   digi 1: =%s \n   digi 2: =%s \n   digi 3: =%s \n   digi 4: =%s \n   digi 5: =%s"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,digi0,digi1,digi2,digi3,digi4,digi5"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMDA300 XSENSOR PK4 Config XML" order="6">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humid" byteoffset="11" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="float">
+					<XConvParam variablename="x" fieldname="humid" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="13" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="float">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="counter" byteoffset="15" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x84"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x04"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   battery voltage:   =%s mV  \n   temperature:       =%s C \n   humidity:          =%s %%\n   counter=%s"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,voltage,humtemp,humid,counter"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="humid" value="[0,100]"/>
+				<XDSParam name="humtemp" value="[-5,45]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+
+</XServeConfig>
+

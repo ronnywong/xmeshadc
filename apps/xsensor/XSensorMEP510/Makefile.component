@@ -1,0 +1,5 @@
+# $Id: Makefile.component,v 1.1 2006/01/03 07:41:58 mturon Exp $
+
+COMPONENT=TestSensor
+SENSORBOARD=mep510
+PFLAGS += -I$(XBOWROOT)/sensorboards/$(SENSORBOARD) -I$(TOSROOT)/tos/sensorboards/micawb

@@ -1,0 +1,5 @@
+# $Id: Makefile.component,v 1.1 2006/01/05 23:55:32 abroad Exp $
+
+COMPONENT=TestSleepC
+
+

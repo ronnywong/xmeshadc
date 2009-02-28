@@ -1,0 +1,32 @@
+1/05/06
+
+	CC2420Const.h
+		- added backoff timer constants
+		
+	CC2420RadioM.nc
+		- new version doesn't work w/ lp
+		
+	pinMacros.h
+		- debugging file added
+
+
+1/15/06
+	pinMacros.h
+		- moved to /platform/micaz
+	
+	CC2420RadioM.nc
+		- Modified CCA paramters
+		
+	CC2420ControlM.nc
+		- changed wakeup time
+		
+2/08/06
+	CC2420RadioM.nc
+		- added interfaces for packet based activity detection
+		
+2/10/06
+	CC2420ControllM.nc
+		- Since vreg is always on, stop waiting for it to stabalize
+		- this saves more energy on frequent power cycles
+
+			

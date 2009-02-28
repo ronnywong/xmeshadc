@@ -1,0 +1,4 @@
+# $Id: Makefile.component,v 1.1.2.1 2006/09/29 08:17:36 chenrl Exp $
+
+COMPONENT=XMTS300
+SENSORBOARD=mts310

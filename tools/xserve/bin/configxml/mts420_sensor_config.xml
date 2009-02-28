@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMTS420 Packet 1 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="rsvd" byteoffset="8" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humid" byteoffset="11" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humid" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="13" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="calibW0" byteoffset="15" length="2" type="uint16"/>
+			<XField name="calibW1" byteoffset="17" length="2" type="uint16"/>
+			<XField name="calibW2" byteoffset="19" length="2" type="uint16"/>
+			<XField name="calibW3" byteoffset="21" length="2" type="uint16"/>
+			<XField name="prtemp" byteoffset="23" length="2" type="uint16">
+				<XConversion function="(200.0+(x-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))*((b &amp; 63)+50.0)/1024.0)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="prtemp" type="float"/>					
+					<XConvParam variablename="a" fieldname="calibW0" type="uint16"/>					
+					<XConvParam variablename="b" fieldname="calibW1" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="press" byteoffset="25" length="2" type="uint16">
+				<XConversion function="((((a &gt;&gt; 1)+(d &gt;&gt; 6)*(y-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))/1024.0+24576)*(x-7168.0))/16384 - ((((c &amp; 63) &lt;&lt; 6) | (d &amp; 63))*4 + ((c &gt;&gt; 6)-512.0)*(y-(8*(((a &amp; 1) &lt;&lt; 10) | (b &gt;&gt; 6))+20224))/1024))/32.0 +250.0" returntype="float">
+					<XConvParam variablename="x" fieldname="press" type="float"/>					
+					<XConvParam variablename="y" fieldname="prtemp" type="float"/>					
+					<XConvParam variablename="a" fieldname="calibW0" type="uint16"/>					
+					<XConvParam variablename="b" fieldname="calibW1" type="uint16"/>					
+					<XConvParam variablename="c" fieldname="calibW2" type="uint16"/>					
+					<XConvParam variablename="d" fieldname="calibW3" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="taosch0" byteoffset="27" length="2" type="uint16"/>
+			<XField name="taosch1" byteoffset="29" length="2" type="uint16"/>
+			<XField name="accel_x" byteoffset="31" length="2" type="uint16">
+				<XConversion function="1000.0 * (1.0 - (500 - x)/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accel_x" type="uint16"/>					
+				</XConversion>
+
+			</XField>
+			<XField name="accel_y" byteoffset="33" length="1" type="uint8">
+				<XConversion function="1000.0 * (1.0 - (500 - (x+y*256))/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accel_y" type="uint8"/>					
+					<XConvParam variablename="y" fieldname="rsvd" type="uint8"/>					
+				</XConversion>
+			</XField>
+			<XField name="lightval" byteoffset="27" length="2" type="uint16">
+				<XConversion function="(16.5*((1 &lt;&lt; ((x &amp; 112) &gt;&gt; 4))-1) + (x &amp; 15)*((1 &lt;&lt; ((x &amp; 112) &gt;&gt; 4))-1))*0.46 / exp(3.13*((16.5*((1 &lt;&lt; ((y &amp; 112) &gt;&gt; 4))-1) + (y &amp; 15)*(( 1 &lt;&lt; ((y &amp; 112) &gt;&gt; 4))-1))/(16.5*((1 &lt;&lt; ((x &amp; 112) &gt;&gt; 4))-1) + (x &amp; 15)*((1 &lt;&lt; ((x &amp; 112) &gt;&gt; 4))-1))))" returntype="float">
+					<XConvParam variablename="x" fieldname="taosch0" type="float"/>					
+					<XConvParam variablename="y" fieldname="taosch1" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="calibB0" byteoffset="15" length="1" type="uint8"/>
+			<XField name="calibB1" byteoffset="16" length="1" type="uint8"/>
+			<XField name="calibB2" byteoffset="17" length="1" type="uint8"/>
+			<XField name="calibB3" byteoffset="18" length="1" type="uint8"/>
+			<XField name="calibB4" byteoffset="19" length="1" type="uint8"/>
+			<XField name="calibB5" byteoffset="20" length="1" type="uint8"/>
+			<XField name="calibB6" byteoffset="21" length="1" type="uint8"/>
+			<XField name="calibB7" byteoffset="22" length="1" type="uint8"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x86"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x81"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x01"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS420 [sensor data converted to engineering units]:\n   health:       node id = %s\n   battery:              = %s mv \n   humidity:             = %s %%  \n   Temperature:          = %s degC \n   IntersemaTemperature: = %s degC \n   IntersemaPressure:    = %s mbar \n   Light :               = %s lux\n   X-axis Accel:         = %s mg \n   Y-axis Accel:         = %s mg "/>
+				<XDSParam name="printfields" value="nodeid,voltage,humid,humtemp,prtemp,press,lightval,accel_x,accel_y"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mts420_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mts420_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, humid integer, humtemp integer,prtemp integer,press integer,taosch0 integer,taosch1 integer,accel_x integer, accel_y integer)"/>				
+				<XDSParam name="tablename_2" value="mts420_results_l"/>
+				<XDSParam name="createsql_2" value="CREATE TABLE mts420_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, humid integer, humtemp integer,prtemp integer,press integer,taosch0 integer,taosch1 integer,accel_x integer, accel_y integer)"/>				
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mts420_results AS ON INSERT TO mts420_results DO ( DELETE FROM mts420_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mts420_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mts420_results (result_time,nodeid,voltage,humid,humtemp,prtemp,press,taosch0,taosch1,accel_x,accel_y) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,voltage,humid,humtemp,prtemp,press,taosch0,taosch1,accel_x,accel_y"/>
+				<XDSParam name="tablename_3" value="mts420_results_i"/>
+				<XDSParam name="createsql_3" value="CREATE TABLE mts420_results_i ( nodeid integer ,x_coord integer, y_coord integer, z_coord integer,mote_name text, calib bytea , boardid integer)"/>				
+				<XDSParam name="updatesql_3" value="update mts420_results_i  set calib='\\%o\\%o\\%o\\%o\\%o\\%o\\%o\\%o' where nodeid=%i"/>
+				<XDSParam name="updatefields_3" value="calibB0,calibB1,calibB2,calibB3,calibB4,calibB5,calibB6,calibB7,nodeid"/>
+				<XDSParam name="insertsql_3" value="INSERT into mts420_results_i ( nodeid,mote_name,calib) values (%i,'MTS420','\\%o\\%o\\%o\\%o\\%o\\%o\\%o\\%o')"/>
+				<XDSParam name="insertfields_3" value="nodeid,calibB0,calibB1,calibB2,calibB3,calibB4,calibB5,calibB6,calibB7"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="humid" value="[0,100]"/>
+				<XDSParam name="humtemp" value="[-5,45]"/>
+				<XDSParam name="prtemp" value="[-5,45]"/>
+				<XDSParam name="press" value="[900,1100]"/>
+				<XDSParam name="accel_x" value="[-2000,2000]"/>
+				<XDSParam name="accel_y" value="[-2000,2000]"/>
+				<XDSParam name="taoch0" value="[0,500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMTS420 Packet 2 Config XML" order="4">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="hours" byteoffset="9" length="1" type="uint8"/>
+			<XField name="minutes" byteoffset="10" length="1" type="uint8"/>
+			<XField name="Lat_deg" byteoffset="11" length="1" type="uint8"/>
+			<XField name="Long_deg" byteoffset="12" length="1" type="uint8"/>
+			<XField name="dec_sec" byteoffset="13" length="4" type="uint32">
+				<XConversion function="x/1000.0" returntype="float">
+					<XConvParam variablename="x" fieldname="dec_sec" type="uint32"/>					
+				</XConversion>
+			</XField>
+			<XField name="Lat_dec_min" byteoffset="17" length="4" type="uint32">
+				<XConversion function="x/10000.0" returntype="float">
+					<XConvParam variablename="x" fieldname="Lat_dec_min" type="uint32"/>					
+				</XConversion>
+			</XField>
+			<XField name="Long_dec_min" byteoffset="21" length="4" type="uint32">
+				<XConversion function="x/10000.0" returntype="float">
+					<XConvParam variablename="x" fieldname="Long_dec_min" type="uint32"/>					
+				</XConversion>
+			</XField>
+			<XField name="nsewind" byteoffset="25" length="1" type="uint8"/>
+			<XField name="fixed" byteoffset="26" length="1" type="uint8"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x86"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x82"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x02"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS420 [gps data converted to engineering units]:\n   health:     node id=%s \n   Fix taken at %s:%s:%s UTC\n   Latitude %s deg %s \n   Longitude %s deg %s \n   Fix Quality: %s "/>
+				<XDSParam name="printfields" value="nodeid,hours,minutes,dec_sec,Lat_deg,Lat_dec_min,Long_deg,Long_dec_min,fixed"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

@@ -1,0 +1,15 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: mica.target,v 1.1 2006/01/03 07:42:34 mturon Exp $
+
+PLATFORM = mica
+SENSORBOARD ?= micasb
+PROGRAMMER_PART ?= -dpart=ATmega103 --wr_fuse_e=fd
+PFLAGS += -finline-limit=100000
+
+AVR_FUSE_H ?= 0xd9
+
+$(call TOSMake_include_platform,avr)
+
+mica: $(BUILD_DEPS)
+	@:
+

@@ -1,0 +1,6 @@
+# $Id: Makefile.component,v 1.1 2006/01/03 07:42:10 mturon Exp $
+
+COMPONENT=TestMTS410
+SENSORBOARD=mts410
+MSG_SIZE=49
+

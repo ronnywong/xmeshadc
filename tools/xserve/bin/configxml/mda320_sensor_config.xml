@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	
+	<XFieldExtractor name="XMDA320 Package1 Config XML" order="51">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+	    		<XField name="analogCh0" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh0" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh1" byteoffset="11" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh1" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh2" byteoffset="13" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh2" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh3" byteoffset="15" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh3" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh4" byteoffset="17" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh4" type="float"/>
+				</XConversion>
+			</XField>
+	   		<XField name="analogCh5" byteoffset="19" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh5" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh6" byteoffset="21" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh6" type="float"/>
+				</XConversion>
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x90"/>
+				</XCond>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="packet_id"/>
+					<XFilterParam name="fieldvalue" value="0x01"/>
+				</XCond>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA320 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   adc chan 0: voltage=%s mV\n   adc chan 1: voltage=%s mV\n   adc chan 2: voltage=%s mV\n   adc chan 3: voltage=%s mV\n   adc chan 4: voltage=%s mV\n   adc chan 5: voltage=%s mV\n   adc chan 6: voltage=%s mV"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,analogCh0,analogCh1,analogCh2,analogCh3,analogCh4,analogCh5,analogCh6"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="analogCh0" value="[0,2500]"/>
+				<XDSParam name="analogCh1" value="[0,2500]"/>
+				<XDSParam name="analogCh2" value="[0,2500]"/>
+				<XDSParam name="analogCh3" value="[0,2500]"/>
+				<XDSParam name="analogCh4" value="[0,2500]"/>
+				<XDSParam name="analogCh5" value="[0,2500]"/>
+				<XDSParam name="analogCh6" value="[0,2500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+	<XFieldExtractor name="XMDA320 Package2 Config XML" order="52">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="analogCh7" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh7" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh8" byteoffset="11" length="2" type="uint16">
+	    			<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh8" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh9" byteoffset="13" length="2" type="uint16">
+	    			<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh9" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh10" byteoffset="15" length="2" type="uint16">
+	    			<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh10" type="float"/>
+				</XConversion>
+			</XField>
+	    		<XField name="analogCh11" byteoffset="17" length="2" type="uint16">
+	    			<XConversion function="(x*625/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="analogCh11" type="float"/>
+				</XConversion>
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x90"/>
+				</XCond>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="packet_id"/>
+					<XFilterParam name="fieldvalue" value="0x02"/>
+				</XCond>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA320 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   adc chan 7: voltage=%s mV\n   adc chan 8: voltage=%s mV\n   adc chan 9: voltage=%s mV\n   adc chan 10: voltage=%s mV\n   adc chan 11: voltage=%s mV"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,analogCh7,analogCh8,analogCh9,analogCh10,analogCh11"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="analogCh7" value="[0,2500]"/>
+				<XDSParam name="analogCh8" value="[0,2500]"/>
+				<XDSParam name="analogCh9" value="[0,2500]"/>
+				<XDSParam name="analogCh10" value="[0,2500]"/>
+				<XDSParam name="analogCh11" value="[0,2500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	
+	<XFieldExtractor name="XMDA320 Package3 Config XML" order="53">
+		<XFields>
+		  <XField name="board_id" byteoffset="5" length="1" type="uint8"/>
+		  <XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+		  <XField name="nodeid" byteoffset="7" length="1" type="uint8" specialtype="nodeid"/>
+		  <XField name="digitalCh0" byteoffset="9" length="2" type="uint16"/>
+		  <XField name="digitalCh1" byteoffset="11" length="2" type="uint16"/>
+		  <XField name="digitalCh2" byteoffset="13" length="2" type="uint16"/>
+		  <XField name="digitalCh3" byteoffset="15" length="2" type="uint16"/>
+		  <XField name="digitalCh4" byteoffset="17" length="2" type="uint16"/>
+		  <XField name="digitalCh5" byteoffset="19" length="2" type="uint16"/>
+		  <XField name="digitalCh6" byteoffset="21" length="2" type="uint16"/>
+		  <XField name="digitalCh7" byteoffset="23" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x90"/>
+				</XCond>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="packet_id"/>
+					<XFilterParam name="fieldvalue" value="0x03"/>
+				</XCond>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA320 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   digi 0: =%s\n   digi 1: =%s\n   digi 2: =%s\n   digi 3: =%s\n   digi 4: =%s\n   digi 5: =%s\n   digi 6: =%s\n   digi 7: =%s"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,digitalCh0,digitalCh1,digitalCh2,digitalCh3,digitalCh4,digitalCh5,digitalCh6,digitalCh7"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	
+	<XFieldExtractor name="XMDA320 Package4 Config XML" order="54">
+		<XFields>
+		  <XField name="board_id" byteoffset="5" length="1" type="uint8"/>
+	    <XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+	    <XField name="nodeid" byteoffset="7" length="1" type="uint8" specialtype="nodeid"/>
+	    <XField name="batt" byteoffset="9" length="2" type="uint16">
+	    	<XConversion function="(1252352/x)" returntype="uint16">
+			<XConvParam variablename="x" fieldname="batt" type="float"/>
+		</XConversion>
+	    </XField>
+	    <XField name="counter" byteoffset="11" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x90"/>
+				</XCond>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="packet_id"/>
+					<XFilterParam name="fieldvalue" value="0x04"/>
+				</XCond>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA320 [sensor data converted to engineering units]:\n   health:     node id=%s packet=%s\n   battery voltage:   =%s mV\n   counter        :   =%s"/>
+				<XDSParam name="printfields" value="nodeid,packet_id,batt,counter"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="batt" value="[2500,3500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	
+	
+</XServeConfig>
