@@ -1,0 +1,5 @@
+# $Id: Makefile.component,v 1.1 2006/01/03 07:41:03 mturon Exp $
+
+COMPONENT=XMDA300
+SENSORBOARD=mda300
+MSG_SIZE=55
