@@ -88,7 +88,7 @@ implementation
 {
 
 #define SCHEDULER_RESPONSE_TIME 150
-#define TIME_SCALE 100                 //this means we have resolution of 0.1 sec
+#define TIME_SCALE 10                 //this means we have resolution of 0.1 sec, JODOM: now have .01
 #define FLAG_SET 1
 #define FLAG_NOT_SET 0
 
