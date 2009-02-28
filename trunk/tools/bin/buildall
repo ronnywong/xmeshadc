@@ -1,0 +1,335 @@
+#!/usr/bin/perl
+#
+# FILE:         build
+# AUTHOR:       Martin Turon
+# DATE CREATED: May 16, 2005
+# DESCRIPTION:  Filters out error messages from a TinyOS make command.
+#
+# $Id: buildall,v 1.8.4.1 2007/04/27 15:45:38 njain Exp $
+#
+
+use Switch;
+
+$| = 1;
+
+my $g_version = '$Id: buildall,v 1.8.4.1 2007/04/27 15:45:38 njain Exp $';
+print "$g_version\n";
+
+&build_parse_args();
+&build_load_modules();
+
+for my $module (@modules) {
+   ($directory, $makeargs, $makeargs2, $makeargs3, $makeargs4, $makeargs5) = split(/,[ ]*/,$module);
+   chdir($directory);
+   print("In $directory : ");
+   if ($flag_cvs) { 
+      print "cvs update"; 
+      system("cvs update -d");
+   }
+   print("In $directory :    make $makeargs\n");
+   &build_run_make("make $makeargs", $directory);
+
+   print("In $directory :    make $makeargs2\n");
+   &build_run_make("make $makeargs2", $directory);
+   
+   print("In $directory :    make $makeargs3\n");
+   &build_run_make("make $makeargs3", $directory);
+   
+   print("In $directory :    make $makeargs4\n");
+   &build_run_make("make $makeargs4", $directory);
+   
+   print("In $directory :    make $makeargs5\n");
+   &build_run_make("make $makeargs5", $directory);
+
+   if ($flag_doc) {
+     print("In $directory :    make $makeargs docs\n");
+     &build_run_make("make $makeargs docs", $directory);
+
+     print("In $directory :    make $makeargs2 docs\n");
+     &build_run_make("make $makeargs2 docs", $directory);
+	 
+	 print("In $directory :    make $makeargs3 docs\n");
+     &build_run_make("make $makeargs3 docs", $directory);
+	 
+	 print("In $directory :    make $makeargs4 docs\n");
+     &build_run_make("make $makeargs4 docs", $directory);
+	 
+	 print("In $directory :    make $makeargs5 docs\n");
+     &build_run_make("make $makeargs5 docs", $directory);
+   }
+
+   if ($flag_summary) {
+     &build_summary_csv();
+     &build_summary_html();
+   }
+
+}
+
+&build_summary_csv();
+&build_summary_html();
+
+# ====================================================================
+
+#
+# Builds the given make command, and parses the error output
+#
+sub build_run_make {
+
+    my ($make_cmd, $dir) = @_;
+
+    unless($pid=(open MAKE, "make $make_cmd 2>&1 |" ))
+    {
+	die "ERROR: could not execute xlisten";
+    }
+
+    $err_status = "PASS";
+    while (defined($line = <MAKE>)) {
+	if (($line =~ m/.*make freq*/) ||
+	    ($line =~ m/.*make.2.*/) ||
+	    ($line =~ m/.*compiling.*binary.*/) ||
+	    ($line =~ m/.*bytes in ROM.*/) ||
+	    ($line =~ m/.*bytes in RAM.*/) || 
+	    ($line =~ m/.*compiled.*/))
+	{
+	    print $line;
+	}
+	if ($line =~ m/^(.*):([0-9]*):(.*)/) {
+	    $file = $1;
+	    $lnum = $2;
+	    $err  = $3;
+	    if ($file =~ m/In file/) {
+		next;
+	    }
+	    if ($line =~ m/(.*warning:)(.*)/) {
+		$type = "WARNING";
+		$err  = $2;
+		$err_status = "WARNING";
+	    } else {
+		$type = "ERROR"; 
+		$err_status = "ERROR";
+	    }
+	    printf("$file:$lnum: $type:$err\n");
+	}
+	if ($line =~ m/make: \*\*\*.*Stop\.$/) {
+	    $type = "MAKE DIE"; 
+	    $err_status = "MAKE DIE";
+	    printf("$line\n");
+	}
+    }
+    $errors{$dir}{$make_cmd} = $err_status;
+}
+
+sub build_parse_args {
+
+    for my $arg (@ARGV) {
+	switch ($arg) {
+	    case "-?"   {
+	      print "Usage: buildall [OPTION]...\n\n";
+	      print " --cvs      Updates latest source code from cvs.\n";
+	      print " --docs     Runs nesdoc in addition to normal build.\n";
+	      print " --summary  Shows running summary.";
+	      exit();
+	    }
+
+	    case /--cvs/     { print "[cvs] ";     $flag_cvs = 1; }
+	    case /--docs/    { print "[docs] ";    $flag_doc = 1; }
+	    case /--summary/ { print "[summary] "; $flag_summary = 1; }
+	}
+    }
+    print "\n";
+}
+
+sub build_summary_csv {
+   print "\n\nBUILDALL SUMMARY:\n";
+   print "MODULE, mica2, micaz, mica2dot, m9100, m2100, iris ".
+         "mica2 docs, micaz docs, mica2dot docs, m9100 docs, m2100 docs, iris docs".
+         "mica2 route.lp, micaz route.lp, mica2dot route.lp, m9100 route.lp, m2100 route.lp, iris route.lp".
+         "mica2 route.lp docs, micaz route.lp docs, mica2dot route.lp docs, m9100 route.lp docs, m2100 route.lp docs, iris route.lp docs".
+	 "\n";
+
+   while (($key, $value) = each(%errors)){
+       print "$key".
+	     ",".$value->{"make mica2"}.
+	     ",".$value->{"make micaz"}.
+	     ",".$value->{"make mica2dot"}.
+		 ",".$value->{"make m9100"}.
+		 ",".$value->{"make m2100"}.
+		 ",".$value->{"make iris"}.
+	     ",".$value->{"make mica2 docs"}.
+	     ",".$value->{"make micaz docs"}.
+	     ",".$value->{"make mica2dot docs"}.
+		 ",".$value->{"make m9100 docs"}.
+		 ",".$value->{"make m2100 docs"}.
+		 ",".$value->{"make iris docs"}.
+	     ",".$value->{"make mica2 route.lp"}.
+	     ",".$value->{"make micaz route.lp"}.
+	     ",".$value->{"make mica2dot route.lp"}.
+		 ",".$value->{"make m9100 route.lp"}.
+		 ",".$value->{"make m2100 route.lp"}.
+		 ",".$value->{"make iris route.lp"}.
+	     ",".$value->{"make mica2 route.lp docs"}.
+	     ",".$value->{"make micaz route.lp docs"}.
+	     ",".$value->{"make mica2dot route.lp docs"}.
+		 ",".$value->{"make m9100 route.lp docs"}.
+		 ",".$value->{"make m2100 route.lp docs"}.
+		 ",".$value->{"make iris route.lp docs"}.
+	     "\n";
+   }
+}
+
+sub build_summary_html {
+   print <<BUILD_SUMMARY_HEAD;
+<html>
+<head><title>Crossbow Buildall Summary</title></head>
+<body>
+   <table border>
+     <tr>
+       <td>MODULE</td>
+       <td>mica2</td>
+       <td>micaz</td>
+       <td>mica2dot</td>
+	   <td>m9100</td>
+	   <td>m2100</td>
+	   <td>iris</td>
+       <td>mica2 docs</td>
+       <td>micaz docs</td>
+       <td>mica2dot docs</td>
+	   <td>m9100 docs</td>
+	   <td>m2100 docs</td>
+	   <td>iris docs</td>
+       <td>mica2 route.lp</td>
+       <td>micaz route.lp</td>
+       <td>mica2dot route.lp</td>
+	   <td>m9100 route.lp</td>
+	   <td>m2100 route.lp</td>
+	   <td>iris route.lp</td>
+       <td>mica2 route.lp docs</td>
+       <td>micaz route.lp docs</td>
+       <td>mica2dot route.lp docs</td>
+	   <td>m9100 route.lp docs</td>
+	   <td>m2100 route.lp docs</td>
+	   <td>iris route.lp docs</td>
+     </tr>
+BUILD_SUMMARY_HEAD
+
+	while (($key, $value) = each(%errors)){
+       print "<tr><td>$key</td>".
+	     build_result_html($value->{"make mica2"}).
+	     build_result_html($value->{"make micaz"}).
+	     build_result_html($value->{"make mica2dot"}).
+		 build_result_html($value->{"make m9100"}).
+	     build_result_html($value->{"make m2100"}).
+	     build_result_html($value->{"make iris"}).
+	     build_result_html($value->{"make mica2 docs"}).
+	     build_result_html($value->{"make micaz docs"}).
+	     build_result_html($value->{"make mica2dot docs"}).
+		 build_result_html($value->{"make m9100 docs"}).
+	     build_result_html($value->{"make m2100 docs"}).
+	     build_result_html($value->{"make iris docs"}).
+	     build_result_html($value->{"make mica2 route.lp"}).
+	     build_result_html($value->{"make micaz route.lp"}).
+	     build_result_html($value->{"make mica2dot route.lp"}).
+		 build_result_html($value->{"make m9100 route.lp"}).
+	     build_result_html($value->{"make m2100 route.lp"}).
+	     build_result_html($value->{"make iris route.lp"}).
+		 build_result_html($value->{"make mica2 route.lp docs"}).
+	     build_result_html($value->{"make micaz route.lp docs"}).
+	     build_result_html($value->{"make mica2dot route.lp docs"}).
+		 build_result_html($value->{"make m9100 route.lp docs"}).
+	     build_result_html($value->{"make m2100 route.lp docs"}).
+	     build_result_html($value->{"make iris route.lp docs"}).
+	     "</tr>\n";
+   }
+
+   print "</table></body></html>\n";
+}
+
+sub build_result_html {
+    my ($msg) = @_;
+    my $result = "<td>"; 
+
+    use Switch;
+    switch ($msg) {
+	case "ERROR"   { $result .= "<font color=FF0000><b>$msg</b></font>"; }
+	case "WARNING" { $result .= "<font color=FF8000><b>$msg</b></font>"; }
+	case "PASS"    { $result .= "<font color=00FF00><b>$msg</b></font>"; }
+	else           { $result .= "$msg"; }
+    }
+
+    $result .= "</td>";
+    return $result;
+}
+
+sub build_load_modules {
+    # If no file loaded, use this default...
+    $tree = "/opt/MoteWorks/apps";
+    @modules = ( 
+      ## General apps for MICA2 and MICAZ
+      "$tree/general/Blink,          mica2, micaz, m9100, m2100, iris",
+      "$tree/general/CountRecieve,   mica2, micaz, m9100, m2100, iris",
+      "$tree/general/CountSend,      mica2, micaz, m9100, m2100, iris",
+      "$tree/general/XSniffer,       mica2, micaz, m9100, m2100, iris",
+
+      ## XMesh HP apps for MICA2 and MICAZ
+      "$tree/xmesh/XMeshBase,        mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMDA100,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMDA300,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMDA320,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMDA325,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTS101,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTS310,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTS410,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTS420,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTS450,          mica2, micaz, m9100, m2100, iris",
+
+      "$tree/xmesh/XMEP410,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMSP410,          mica2, micaz, m9100, m2100, iris",
+      "$tree/xmesh/XMTP400,          mica2, micaz, m9100, m2100, iris",
+
+      ## XMesh LP apps for MICA2 and MICAZ
+      "$tree/xmesh/XMeshBase,        mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMDA100,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMDA300,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMDA320,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMDA325,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTS101,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTS310,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTS410,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTS420,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTS450,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+
+      "$tree/xmesh/XMEP410,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMSP410,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+      "$tree/xmesh/XMTP400,          mica2 route.lp, micaz route.lp, m9100 route.lp, m2100 route.lp, iris route.lp",
+
+      ## XMesh HP and LP apps for MICA2DOT
+  #    "$tree/xmesh/XMTS510,          mica2dot, mica2dot route.lp",
+   #   "$tree/xmesh/XMDA500,          mica2dot, mica2dot route.lp",
+   #   "$tree/xmesh/XMEP510,          mica2dot, mica2dot route.lp",
+
+      ## XSensor apps for MICA2 and MICAZ
+      "$tree/xsensor/XSensorMDA100,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMDA300,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMDA320,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMDA325,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTS101,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTS300,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTS400,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTS410,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTS450,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMEP410,  mica2, micaz, m9100, m2100, iris",
+      "$tree/xsensor/XSensorMTP400,  mica2, micaz, m9100, m2100, iris",
+     
+      ## Tutorial apps for MICA2 and MICAz
+      "$tree/tutorials/XSensorTutorial.bare,       mica2, micaz, m9100, m2100, iris",
+      "$tree/tutorials/XSensorTutorial.bare_soln,  mica2, micaz, m9100, m2100, iris",
+      "$tree/tutorials/XSensorTutorial.debug,      mica2, micaz, m9100, m2100, iris",
+      "$tree/tutorials/XSensorTutorial.debug_soln, mica2, micaz, m9100, m2100, iris",
+      "$tree/tutorials/XSensorTutorial.rf,         mica2, micaz, m9100, m2100, iris",
+      "$tree/tutorials/XSensorTutorial.rf_soln,    mica2, micaz, m9100, m2100, iris",
+    );
+}
+
+
+
+

@@ -1,0 +1,219 @@
+#!/usr/bin/perl -w
+
+my $app1 = "";
+my $app1_type = "";
+my $app2 = "";
+my $app2_type = "";
+my $plat = "";
+my $goals = "";
+
+my $app1_files = "";
+my $app2_files = "";
+
+my $app1tosroot = "";
+my $app2tosroot = "";
+
+
+#sub setmwenv() {
+#	$ENV{TOSDIR} = 
+#
+#}
+
+sub get_type {
+	my $app = $_[0];
+	
+	if ($app =~ /\/MoteWorks/){
+		return "mw";
+	}
+
+	if ($app =~ /\/tinyos-1.xdev/){
+		return "xdev";
+	}
+
+	print "Application $app does not appear to be a MoteWorks or tinyos-1.xdev application. Exiting \n";
+	exit;
+
+}
+
+
+sub main() {
+	#Usage:  treediff <app1>  <app2>  <platform> <goals>
+	# first arg is operation	
+	if ( $#ARGV < 2 ) {
+		print "Usage: treediff <app1> <app2> <platform> <goals> \n";
+		exit;
+	}
+	
+	$app1 = $ARGV[0]; 	
+	$app2 = $ARGV[1]; 
+	$plat = $ARGV[2];
+	for(my $i = 3; $i <= $#ARGV; $i++){	
+		$goals = $goals . " " . $ARGV[$i];
+	}
+	
+	
+	#figure out if app1 is a moteworks or xdev
+	$app1_type = get_type($app1);
+	$app2_type = get_type($app2);
+	
+	print " APP 1: $app1 \n APP TYPE: $app1_type  \n APP 2: $app2 \n APP TYPE: $app2_type \n PLATFORM: $plat \n GOALS: $goals \n" ; 
+	
+	#set up tinyos-1.x directory
+	if( -e "/opt/tinyos-1.x" and not (-l "/opt/tinyos-1.x")){
+		print "/opt/tinyos-1.x must me a symbolic link. Exiting";
+		exit;
+	}
+	
+	#remove existing link
+	if (-e "/opt/tinyos-1.x"){	
+		`rm /opt/tinyos-1.x`;
+	}
+
+
+
+
+	
+	if ($app1_type eq "mw"){
+		$_ = $app1 =~ m/\/MoteWorks.*?\//;
+		my $tosroot = $` . $&;
+		my $tosdir = $tosroot . "tos";
+		my $makerule = $tosroot . "make/Makerules";
+	
+
+		$app1tosroot = $tosroot;
+	
+		#link tinyos-1.x
+		`ln -s $tosroot /opt/tinyos-1.x`;
+		
+		$ENV{TOSROOT} = "/opt/tinyos-1.x";
+		$ENV{TOSDIR} = "/opt/tinyos-1.x/tos";
+		$ENV{MAKERULES} = $makerule;
+		
+		chdir $app1;		
+		
+		$app1_files = `make $plat $goals NESC_FLAGS+=-Wnesc-all NESC_FLAGS+=-v 2>&1 | grep preprocess | sort`;
+		
+	}else{
+			$_ = $app1 =~ m/\/tinyos-1.xdev.*?\//;
+			my $tosroot = $` . $&;
+			my $tosdir = $tosroot . "tos";			
+			
+			$app1tosroot = $tosroot;
+
+			
+			#link tinyos-1.x
+			`ln -s $tosroot /opt/tinyos-1.x`;
+			
+			$ENV{TOSROOT} = "/opt/tinyos-1.x";
+			$ENV{TOSDIR} = "/opt/tinyos-1.x/tos";
+			
+			chdir $app1;		
+			
+			$app1_files = `make $plat $goals NESC_FLAGS+=-Wnesc-all NESC_FLAGS+=-v 2>&1 | grep preprocess | sort`;
+			
+	}
+
+
+	#remove existing link
+	if (-e "/opt/tinyos-1.x"){	
+		`rm /opt/tinyos-1.x`;
+	}
+
+
+	if ($app2_type eq "mw"){
+		$_ = $app2 =~ m/\/MoteWorks.*?\//;
+		my $tosroot = $` . $&;
+		my $tosdir = $tosroot . "tos";
+		my $makerule = $tosroot . "make/Makerules";
+		
+		$app2tosroot = $tosroot;	
+		
+		#link tinyos-1.x
+		`ln -s $tosroot /opt/tinyos-1.x`;
+		
+		$ENV{TOSROOT} = "/opt/tinyos-1.x";
+		$ENV{TOSDIR} = "/opt/tinyos-1.x/tos";
+		$ENV{MAKERULES} = $makerule;
+		
+		chdir $app2;		
+		
+		$app2_files = `make $plat $goals NESC_FLAGS+=-Wnesc-all NESC_FLAGS+=-v 2>&1 | grep preprocess | sort`;
+		
+	}else{
+			$_ = $app2 =~ m/\/tinyos-1.xdev.*?\//;
+			my $tosroot = $` . $&;
+			my $tosdir = $tosroot . "tos";			
+			
+			$app2tosroot = $tosroot;	
+			
+			#link tinyos-1.x
+			`ln -s $tosroot /opt/tinyos-1.x`;
+			
+			$ENV{TOSROOT} = "/opt/tinyos-1.x";
+			$ENV{TOSDIR} = "/opt/tinyos-1.x/tos";
+			
+			chdir $app2;		
+			
+			$app2_files = `make $plat $goals NESC_FLAGS+=-Wnesc-all NESC_FLAGS+=-v 2>&1 | grep preprocess | sort`;
+			
+	}
+
+	#flip the slashes
+	$app1_files =~ s/\\/\//g;
+	#strip up to the opt
+	$app1_files =~ s/preprocessing.*?\/opt\/tinyos-1.x/$app1tosroot/g;
+	#add dir path to the files for the app
+	$app1_files =~ s/preprocessing\s/$app1/g;
+	
+	#flip the slashes
+	$app2_files =~ s/\\/\//g;
+	#strip up to the opt
+	$app2_files =~ s/preprocessing.*?\/opt\/tinyos-1.x/$app2tosroot/g;
+	#add dir path to the files for the app
+	$app2_files =~ s/preprocessing\s/$app2/g;
+	
+	my $temp1_files = $app1_files;
+	my $temp2_files = $app2_files;
+
+
+
+	
+
+	#now do the diffs
+	while($temp1_files =~ /\n/){
+		my $line1 = $`;
+		$temp1_files = $';
+				
+		my $file1 = `basename $line1`;					
+		
+		if($line1 =~ /^\/opt/){
+			$temp2_files = $app2_files;
+			while($temp2_files =~ /\n/){
+				my $line2 = $`;
+				$temp2_files = $';
+				
+				my $file2 = `basename $line2`;			
+								
+				if($line2 =~ /^\/opt/){
+					#compare the file names
+					if($file1 eq $file2){
+						print "Diffing $line1 AND $line2 \n";
+						my $diffres = `diff -w -b -E -a $line1 $line2`;
+						$diffres =~ s/\d+?\w\d+?.*?\n<.*?\$[I][d]:.*?\n---\n>.*?\$[I][d]:.*?\n//g;
+						print "$diffres";
+						last;
+						
+					}
+				}
+				
+			}
+		}
+		
+	}
+
+
+
+}
+
+
+main();

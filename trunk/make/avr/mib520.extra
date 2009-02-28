@@ -1,0 +1,17 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: mib520.extra,v 1.1 2006/01/03 07:42:43 mturon Exp $
+
+ifeq ($(MIB520),)
+$(error MIB520 must be defined, try "make $(TARGETS) help")
+endif
+
+PROGRAM = mib520
+PROGRAMMER_FLAGS = -dprog=mib520 -dserial=$(MIB520) --wr_fuse_h=$(AVR_FUSE_H) $(PROGRAMMER_PART) $(PROGRAMMER_EXTRA_FLAGS_MIB)
+
+program: FORCE
+	@echo "    installing $(PLATFORM) binary using mib520"
+	$(PROGRAMMER) $(PROGRAMMER_FLAGS) --erase --upload if=$(INSTALL_SREC)
+
+program_bl: FORCE
+	@echo "    installing $(PLATFORM) bootloader using mib520"
+	$(PROGRAMMER) $(PROGRAMMER_FLAGS) --upload if=$(BOOTLOADER)

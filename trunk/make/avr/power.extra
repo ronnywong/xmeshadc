@@ -1,0 +1,316 @@
+#
+# FILE:    power.extra
+# AUTHOR:  Martin Turon, Jaidev Prabhu
+# DATE:    February 12, 2004
+#
+# Set Radio Power 
+#  - Radio Transmit Power (RTP) is by a value between 0x00 and 0xFF
+#  - RTP = 0 for least power; RTP =0xFF for max transmit power
+#
+#
+# MICAZ RF Power Levels
+#
+#TXPOWER_MAX      TXPOWER_0DBM      //   0dBm
+#TXPOWER_0DBM     0x1F              //   0dBm
+#TXPOWER_M3DBM    0x17              //  -3dBm
+#TXPOWER_M5DBM    0x13              //  -5dBm
+#TXPOWER_M10DBM   0x0B              // -10dBm
+#TXPOWER_M15DBM   0x07              // -15dBm
+#TXPOWER_M25DBM   0x03              // -25dBm
+#TXPOWER_MIN      TXPOWER_M25DBM    // -25dBm 
+#
+#
+#   For CC1000 ...
+#	POWER=<power>	where power is one of:
+#		max	
+#		10 
+#		5	
+#		0
+#		-10	
+#		-20	
+#		min	
+#
+#
+# RF230 RF Power Levels 
+#
+# TXPOWER_3_2DBM 0	//+3.2dbm
+# TXPOWER_2_8DBM 1
+# TXPOWER_2_3DBM 2
+# TXPOWER_1_8DBM 3
+# TXPOWER_1_3DBM 4
+# TXPOWER_0_7DBM 5
+# TXPOWER_0DBM 6
+# TXPOWER_M1DBM 7
+# TXPOWER_M2DBM 8
+# TXPOWER_M3DBM 9
+# TXPOWER_M4DBM 10
+# TXPOWER_M5DBM 11
+# TXPOWER_M7DBM 12
+# TXPOWER_M9DBM 13
+# TXPOWER_M12DBM 14
+# TXPOWER_M17DBM 15	//-17dbm
+#
+#			
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: power.extra,v 1.1.4.4 2007/01/23 20:40:49 xyang Exp $
+
+########################################################
+#  
+#  RF230 CC2420 CC1000 Radio platforms: 
+#  Set Default Radio Power: TXPOWER_MAX
+#
+########################################################
+# Default settings 
+
+ifeq ($(RADIO_CHIP),RF230)
+    ifeq ($(RADIO_POWER),)
+        RADIO_POWER = TXPOWER_MAX
+    endif
+    CFLAGS += -DRF230_TXPOWER=$(RADIO_POWER)
+
+endif
+
+ifeq ($(RADIO_CHIP),CC2420)
+    ifeq ($(RADIO_POWER),)
+        RADIO_POWER = TXPOWER_MAX
+    endif
+    CFLAGS += -DCC2420_TXPOWER=$(RADIO_POWER)
+endif
+
+ifeq ($(RADIO_CHIP), CC1000)
+    #For Bijaku seeting for 315 MHz set power to lowest level
+    ifeq ($(RADIO_POWER),)
+        ifeq ($(RADIO_CLASS),315)
+            RADIO_POWER=0x01
+        else
+            #For all other settings default is max power
+            RADIO_POWER=0xFF
+        endif
+    endif
+    CFLAGS += -DRADIO_XMIT_POWER=$(RADIO_POWER) 
+
+    ifeq ($(RADIO_CLASS),433)
+        PFLAGS +=-DFREQ_433_MHZ 
+    endif
+endif
+
+########################################################
+#  
+#  CC1020 Radio platforms: 
+#  Set Radio Power
+#
+########################################################
+
+ifeq ($(RADIO_CHIP), CC1020)
+    #Translate Radio Power Here
+    ifeq ($(RADIO_POWER),)
+         RADIO_POWER=RF_POWER_MIN
+    endif
+	
+		ifeq ($(RADIO_POWER),TXPOWER_MAX)
+			RF_POWER_DEFAULT=RF_POWER_MAX
+		endif
+	
+		ifeq ($(RADIO_POWER),TXPOWER_MIN)
+			RF_POWER_DEFAULT=RF_POWER_MIN
+		endif
+	
+		ifeq ($(RADIO_POWER),TXPOWER_M0DBM)
+			RF_POWER_DEFAULT=RF_POWER_00DBM
+		endif
+
+    #Push in the defines here
+    CFLAGS += -DRF_POWER_DEFAULT=$(RF_POWER_DEFAULT) 
+endif
+
+
+########################################################
+#  
+#  CC2420 Radio platforms: 
+#  Set Radio Power
+#  For CC2420 based platform - Micaz  M2100(Micazb)
+#
+########################################################
+ # For CC2420based platform - MicaZ                
+ifeq ($(RADIO_CHIP), CC2420)
+        ifeq ($(POWER), max)
+            RADIO_POWER=TXPOWER_MAX
+        endif
+        ifeq ($(POWER), 0)
+            RADIO_POWER=TXPOWER_0DBM
+        endif
+        ifeq ($(POWER), -3)
+            RADIO_POWER=TXPOWER_M3DBM
+        endif
+        ifeq ($(POWER), -5)
+            RADIO_POWER=TXPOWER_M5DBM
+        endif
+        ifeq ($(POWER), -10)
+            RADIO_POWER=TXPOWER_M10DBM
+        endif
+        ifeq ($(POWER), -15)
+            RADIO_POWER=TXPOWER_M15DBM
+        endif
+        ifeq ($(POWER), -25)
+            RADIO_POWER=TXPOWER_M25DBM
+        endif
+        ifeq ($(POWER), min)
+            RADIO_POWER=TXPOWER_M25DBM
+        endif
+endif
+	
+########################################################
+#  
+#  RF230 Radio platforms: 
+#  Set Radio Power
+#  For RF230 based platform -  RCB230  M2110(Micazc)      
+#
+########################################################          
+ifeq ($(RADIO_CHIP), RF230)
+        ifeq ($(POWER), max)
+            RADIO_POWER=TXPOWER_MAX
+        endif
+        ifeq ($(POWER), 3.2)
+            RADIO_POWER=TXPOWER_3_2DBM
+        endif
+        ifeq ($(POWER), 2.8)
+            RADIO_POWER=TXPOWER_2_8DBM
+        endif
+        ifeq ($(POWER), 2.3)
+            RADIO_POWER=TXPOWER_2_3DBM
+        endif
+        ifeq ($(POWER), 1.8)
+            RADIO_POWER=TXPOWER_1_8DBM
+        endif
+        ifeq ($(POWER), 1.3)
+            RADIO_POWER=TXPOWER_1_3DBM
+        endif
+        ifeq ($(POWER), 0.7)
+            RADIO_POWER=TXPOWER_0_7DBM
+        endif
+        ifeq ($(POWER), 0)
+            RADIO_POWER=TXPOWER_0DBM
+        endif
+        ifeq ($(POWER), -1)
+            RADIO_POWER=TXPOWER_M1DBM
+        endif
+        ifeq ($(POWER), -2)
+            RADIO_POWER=TXPOWER_M2DBM
+        endif
+        ifeq ($(POWER), -3)
+            RADIO_POWER=TXPOWER_M3DBM
+        endif
+        ifeq ($(POWER), -4)
+            RADIO_POWER=TXPOWER_M4DBM
+        endif
+        ifeq ($(POWER), -5)
+            RADIO_POWER=TXPOWER_M5DBM
+        endif
+        ifeq ($(POWER), -7)
+            RADIO_POWER=TXPOWER_M7DBM
+        endif
+        ifeq ($(POWER), -9)
+            RADIO_POWER=TXPOWER_M9DBM
+        endif
+        ifeq ($(POWER), -12)
+            RADIO_POWER=TXPOWER_M12DBM
+        endif
+        ifeq ($(POWER), -17)
+            RADIO_POWER=TXPOWER_M17DBM
+        endif
+        ifeq ($(POWER), min)
+            RADIO_POWER=TXPOWER_MIN
+        endif
+endif	
+
+
+########################################################
+#  
+#  CC1000 Radio platforms: 
+#  Set Radio Power
+#  For CC1000 based platform -  Mica2 Mica2Dot  M4100 M9100(Mica2b)      
+#
+########################################################   
+
+ifeq ($(RADIO_CHIP),CC1000)
+
+	####################################################
+	#  Freq Band:  Output Power(dBm) RTP
+	#  916 Mhz     -20               0x02
+	#              -10               0x09
+	#               0 (1mw)          0x80
+	#               5                0xFF
+	####################################################
+	ifeq ($(RADIO_CLASS),916)
+		    ifeq ($(POWER), max)
+		        RADIO_POWER=0xFF
+		    endif
+		    ifeq ($(POWER), 0)
+		        RADIO_POWER=0x80
+		    endif
+		    ifeq ($(POWER), -5)
+		        RADIO_POWER=0x40
+		    endif
+		    ifeq ($(POWER), -10)
+		        RADIO_POWER=0x09
+		    endif
+		    ifeq ($(POWER), -20)
+		        RADIO_POWER=0x02
+		    endif
+		    ifeq ($(POWER), min)
+		        RADIO_POWER=0x02
+		    endif
+	 endif
+	
+	#####################################
+	#  Freq Band:  Output Power(dBm) RTP
+	#  433 Mhz     -20               0x01
+	#              -10               0x05
+	#               0 (1mw)          0x0F
+	#               10               0xFF
+	 #####################################
+	ifeq ($(RADIO_CLASS),433)
+        ifeq ($(POWER), max)
+            RADIO_POWER=0xFF
+        endif
+        ifeq ($(POWER), 10)
+            RADIO_POWER=0xFF
+        endif
+        ifeq ($(POWER), 0)
+            RADIO_POWER=0x0F
+        endif
+        ifeq ($(POWER), -10)
+            RADIO_POWER=0x05
+        endif
+        ifeq ($(POWER), -20)
+            RADIO_POWER=0x01
+        endif
+        ifeq ($(POWER), min)
+            RADIO_POWER=0x01
+        endif
+  endif
+  
+  #####################################
+	#  Freq Band:  Output Power(dBm) RTP
+	#  315 Mhz  
+  #####################################
+  ifeq ($(RADIO_CLASS),315)
+      ifeq ($(POWER), max)
+          RADIO_POWER=0x01
+      endif
+      ifeq ($(POWER), min)
+          RADIO_POWER=0x01
+      endif
+  endif
+
+endif
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: debug.extra,v 1.2 2006/03/23 04:04:49 husq Exp $
+
+OPTFLAGS += -O1 -g -fnesc-no-inline
+POST_BUILD_EXTRA_DEPS += elf
+MAIN_ELF = $(BUILDDIR)/main.elf
+elf: exe FORCE
+	cp $(MAIN_EXE) $(MAIN_ELF)

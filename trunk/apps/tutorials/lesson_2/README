@@ -1,0 +1,20 @@
+README for Introduction to MoteWorks - Lesson 2: MyApp_Sensor
+Author/Contact: Crossbow Technology Inc.
+
+Description:
+
+MyApp is a basic application that starts a 1Hz timer and toggles the red
+LED every time it fires. In addition the light sensor is sampled and a message
+is sent back to the base station. When the light sensor has been sampled the
+yellow LED is toggled. When the message has been sent to the base station the green
+LED is toggled.
+
+Tools:
+
+None
+
+Known bugs/limitations:
+
+None
+
+See Also:

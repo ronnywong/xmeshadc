@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMTS300 Multihop Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="temp" byteoffset="18" length="2" type="uint16">
+				<XConversion function="((1/(.001307050 + 0.000214381 * log( (10000 * (1023-x))/x   ) + 0.000000093 * (log( (10000 * (1023-x))/x )^3))) - 273.15)" returntype="float">
+					<XConvParam variablename="x" fieldname="temp" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="light" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(y * (1252352/x) / 1023)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+					<XConvParam variablename="y" fieldname="light" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="mic" byteoffset="22" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x83"/>
+				</XCond>				
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS300 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s\n   battery:  = %s mv \n   temperature=%s degC\n   light: = %s ADC mv\n   mic: = %s ADC counts "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,temp,light,mic"/>
+			</XDataSink>
+			<XDataSink name="Generic Alert Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="temp" value="[-5,45]"/>
+				<XDSParam name="light" value="[0,3000]"/>
+				<XDSParam name="mic" value="[0,1000]"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mts300_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mts300_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer, mic integer)"/>				
+				<XDSParam name="tablename_2" value="mts300_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mts300_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer, mic integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mts300_results AS ON INSERT TO mts300_results DO ( DELETE FROM mts300_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mts300_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mts300_results (result_time,nodeid,parent,voltage,temp,light,mic) values (now(),%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,voltage,temp,light,mic"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

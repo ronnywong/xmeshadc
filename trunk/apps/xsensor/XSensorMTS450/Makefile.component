@@ -1,0 +1,4 @@
+# $Id: Makefile.component,v 1.1 2006/01/03 07:42:13 mturon Exp $
+COMPONENT=XSensorMTS450
+SENSORBOARD=mts450
+

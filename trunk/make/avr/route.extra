@@ -1,0 +1,198 @@
+#
+# FILE:    route.extra
+# AUTHOR:  Martin Turon, Jaidev Prabhu
+# DATE:    January 12, 2004
+#
+# Simplifies the compilation of XMesh application binaries in various
+# configurations.  By passing flags to the make tool, features can be
+# compiled into the final image.
+#
+# 	make micaz ... route,<stack>	   where stack is one of:
+#
+#		hp	    XMesh High Power           ROUTE_PROTOCOL=XMESH_HP=0x90
+#		lp	    XMesh Low Power						 ROUTE_PROTOCOL=XMESH_LP=0x91
+#		elp	    XMesh Extended Low Power   ROUTE_PROTOCOL=XMESH_ELP=0x92
+#   VLP			very low power (time synced low power) ROUTE_PROTOCOL=XMESH_VLP=0x93
+#
+#		surge     Surge Reliable				 					ROUTE_PROTOCOL=SURGE=0x70
+#		surge_lpl Surge Low Power Listening 			ROUTE_PROTOCOL=SURGE_LPL=0x71
+#		surge_ts  Surge Low Power with Time Sync	ROUTE_PROTOCOL=SURGE_TS=0x72
+#		mint	    Mint Route											ROUTE_PROTOCOL=SURGE_MINT=0x73
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: route.extra,v 1.16.2.3 2007/02/28 00:12:20 xyang Exp $
+#
+
+#
+# DEFAULT -- Variables
+#
+
+ifndef $(XBOWROOT)
+    XBOWROOT=%T
+endif
+
+#default always assigned.  This is done also in binlink.extra
+ifeq ($(ROUTE),)
+    ROUTE=hp
+endif
+
+
+#
+# HP -- high power mesh backbone
+#
+ifeq ($(ROUTE), hp)
+	PFLAGS += -DROUTE_PROTOCOL=0x90
+
+	#path for cc1000 radio
+    ifeq ($(RADIO_CHIP), CC1000)
+        PFLAGS += -I$(XBOWROOT)/radio/cc1000hp
+    endif
+    
+    #path for cc2420 radio
+    ifeq ($(RADIO_CHIP), CC2420)
+        PFLAGS += -I$(XBOWROOT)/radio/cc2420
+    endif
+
+    #path for rf230 radio
+    ifeq ($(RADIO_CHIP), RF230)
+        PFLAGS += -I$(XBOWROOT)/radio/rf230
+    endif
+
+    #path for XMesh source
+    ifeq ($(XMESH_BUILD_MODE),source)
+          PFLAGS += -I$(XBOWROOT)/lib/internal/XMesh
+          PFLAGS += -DMULTIHOPROUTER=XMeshRouter
+    endif
+    
+    #path for XMesh binary
+    ifeq ($(XMESH_BUILD_MODE),binary)
+          PFLAGS += -I$(XBOWROOT)/lib/XMeshBin
+          PFLAGS += -DMULTIHOPROUTER=XMeshBinaryRouter
+    endif
+endif
+
+#
+# LP == low power (low power sampling)
+# 
+ifeq ($(ROUTE), lp)
+	PFLAGS += -DROUTE_PROTOCOL=0x91
+    PFLAGS += -I$(XBOWROOT)/lib/TimeSync
+    PFLAGS += -DUSE_LOW_POWER
+    
+    #CC2420
+    ifeq ($(RADIO_CHIP), CC2420)
+    	#Binary
+    	ifeq ($(RADIO_BUILD_MODE),binary)
+    		PFLAGS += -I$(XBOWROOT)/lib/SlottedSend/bin    		
+    	endif
+    	#Source
+    	ifeq ($(RADIO_BUILD_MODE),source)
+    		PFLAGS += -I$(XBOWROOT)/lib/internal/SlottedSend/src
+    	endif
+    	#BinSource
+    	ifeq ($(RADIO_BUILD_MODE),binsource)
+    		PFLAGS += -I$(XBOWROOT)/lib/internal/SlottedSend/binsrc
+    	endif
+    	#Common  	
+    	PFLAGS += -I$(XBOWROOT)/radio/cc2420
+    endif
+    
+    #CC1000
+    ifeq ($(RADIO_CHIP), CC1000)
+    	#Binary
+    	ifeq ($(RADIO_BUILD_MODE),binary)
+    		PFLAGS += -I$(XBOWROOT)/radio/cc1000lp/bin
+    	endif
+    	#Source
+    	ifeq ($(RADIO_BUILD_MODE),source)
+                PFLAGS += -I$(XBOWROOT)/radio/internal/cc1000lp/src
+    	endif
+   endif
+
+    #RF230
+    ifeq ($(RADIO_CHIP), RF230)
+		#Binary
+		ifeq ($(RADIO_BUILD_MODE),binary)
+    		PFLAGS += -I$(XBOWROOT)/lib/SlottedSendRF230/bin    		
+    	endif
+    	#Source
+    	ifeq ($(RADIO_BUILD_MODE),source)
+    		PFLAGS += -I$(XBOWROOT)/lib/internal/SlottedSendRF230/src
+    	endif
+    	#Common
+    	PFLAGS += -I$(XBOWROOT)/radio/rf230
+    	PFLAGS += -DCPU_PWRMGMT=1
+ 		#see HPLPowerManagement.nc
+    endif
+
+    #XMESH
+    ifeq ($(XMESH_BUILD_MODE), source)
+          PFLAGS += -I$(XBOWROOT)/lib/internal/XMesh
+          PFLAGS += -DMULTIHOPROUTER=XMeshRouter
+    endif
+    ifeq ($(XMESH_BUILD_MODE), binary)
+          PFLAGS += -I$(XBOWROOT)/lib/XMeshBin
+          PFLAGS += -DMULTIHOPROUTER=XMeshBinaryRouter
+    endif
+endif
+
+#
+# ULP == ultra low power 
+#        (aka basic ELP extended low power)
+#        Node will sleep long periods, wake and connect to full power mesh
+#        Node cannot route -- always on edge of network (same as hp)
+#
+ifeq ($(ROUTE), elp)
+    ifeq ($(RADIO_CHIP), CC1000)
+        $(error ELP mode is for CC2420 based platforms only)
+    endif
+	
+    PFLAGS += -DROUTE_PROTOCOL=0x92
+    PFLAGS += -DXMESH_ELP
+    PFLAGS += -DDESCENDANT_TABLE_SIZE=1
+    PFLAGS += -DMHOP_QUEUE_SIZE=1
+    PFLAGS += -I$(XBOWROOT)/lib/TimeSync
+    
+    #CC2420
+    ifeq ($(RADIO_CHIP), CC2420)
+    PFLAGS += -I$(XBOWROOT)/radio/cc2420
+    endif
+    
+    #RF230
+    ifeq ($(RADIO_CHIP), RF230)
+    PFLAGS += -I$(XBOWROOT)/radio/rf230
+    endif
+    
+    #path for XMesh source
+    ifeq ($(XMESH_BUILD_MODE), source)
+          PFLAGS += -I$(XBOWROOT)/lib/internal/XMesh
+          PFLAGS += -DMULTIHOPROUTER=XMeshRouter
+    endif
+    
+    #path for XMesh binary
+    ifeq ($(XMESH_BUILD_MODE), binary)
+          PFLAGS += -I$(XBOWROOT)/lib/XMeshBin
+          PFLAGS += -DMULTIHOPROUTER=XMeshBinaryRouter
+    endif
+endif
+
+#
+# ReliableRoute
+#
+ifeq ($(ROUTE), surge)
+    ifeq ($(RADIO_CHIP), CC1000)
+        PFLAGS += -I$(XBOWROOT)/radio/cc1000hp
+    endif
+		PFLAGS += -DROUTE_PROTOCOL=0x70    
+    PFLAGS += -I$(XBOWROOT)/lib/ReliableRoute
+    PFLAGS += -DMULTIHOPROUTER=EWMAMultiHopRouter
+endif
+
+
+# To use AWoo's MintRoute as routing layer
+ifeq ($(ROUTE), mint)
+		PFLAGS += -DROUTE_PROTOCOL=0x73
+    PFLAGS += -I%T/lib/MintRoute 
+    PFLAGS += -DMULTIHOPROUTER=WMEWMAMultiHopRouter
+endif

@@ -1,0 +1,84 @@
+#
+# FILE:    route.extra
+# AUTHOR:  Martin Turon, Jaidev Prabhu
+# DATE:    January 12, 2004
+#
+# Simplifies the compilation of XMesh application binaries in various
+# configurations.  By passing flags to the make tool, features can be
+# compiled into the final image.
+#
+# 	make micaz ... route,<stack>	   where stack is one of:
+#
+#		hp	    XMesh High Power           ROUTE_PROTOCOL=XMESH_HP=0x90
+#		lp	    XMesh Low Power						 ROUTE_PROTOCOL=XMESH_LP=0x91
+#		elp	    XMesh Extended Low Power   ROUTE_PROTOCOL=XMESH_ELP=0x92
+#   VLP			very low power (time synced low power) ROUTE_PROTOCOL=XMESH_VLP=0x93
+#
+#		surge     Surge Reliable				 					ROUTE_PROTOCOL=SURGE=0x70
+#		surge_lpl Surge Low Power Listening 			ROUTE_PROTOCOL=SURGE_LPL=0x71
+#		surge_ts  Surge Low Power with Time Sync	ROUTE_PROTOCOL=SURGE_TS=0x72
+#		mint	    Mint Route											ROUTE_PROTOCOL=SURGE_MINT=0x73
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: route.extra,v 1.1 2006/03/15 10:16:07 pipeng Exp $
+#
+
+#
+# DEFAULT -- Variables
+#
+
+ifndef $(XBOWROOT)
+    XBOWROOT=%T
+endif
+
+#default always assigned.  This is done also in binlink.extra
+ifeq ($(ROUTE),)
+    ROUTE=hp
+endif
+
+
+#
+# HP -- high power mesh backbone
+#
+ifeq ($(ROUTE), hp)
+	PFLAGS += -DROUTE_PROTOCOL=0x90
+
+    PFLAGS += -I$(XBOWROOT)/radio/telosbcc2420
+    PFLAGS += -I$(TOSDIR)/lib/Queue
+    
+    #path for XMesh source
+    ifeq ($(XMESH_BUILD_MODE),source)
+          PFLAGS += -I$(XBOWROOT)/lib/internal/XMeshTelosb
+          PFLAGS += -DMULTIHOPROUTER=XMeshRouter
+    endif
+    
+    #path for XMesh binary
+    ifeq ($(XMESH_BUILD_MODE),binary)
+          PFLAGS += -I$(XBOWROOT)/lib/XMeshTelosbBin
+          PFLAGS += -DMULTIHOPROUTER=XMeshBinaryRouter
+    endif
+endif
+
+#
+# LP == low power (low power sampling)
+# 
+ifeq ($(ROUTE), lp)
+	PFLAGS += -DROUTE_PROTOCOL=0x91
+    PFLAGS += -I$(XBOWROOT)/lib/TimeSync
+    PFLAGS += -DUSE_LOW_POWER
+    
+    PFLAGS += -I$(XBOWROOT)/radio/telosbcc2420
+    PFLAGS += -I$(TOSDIR)/lib/Queue
+    
+    #XMESH
+    ifeq ($(XMESH_BUILD_MODE), source)
+          PFLAGS += -I$(XBOWROOT)/lib/internal/XMeshTelosb
+          PFLAGS += -DMULTIHOPROUTER=XMeshRouter
+    endif
+    ifeq ($(XMESH_BUILD_MODE), binary)
+          PFLAGS += -I$(XBOWROOT)/lib/XMeshTelosbBin
+          PFLAGS += -DMULTIHOPROUTER=XMeshBinaryRouter
+    endif
+endif
+

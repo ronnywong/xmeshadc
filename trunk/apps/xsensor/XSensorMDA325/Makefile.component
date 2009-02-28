@@ -1,0 +1,6 @@
+# $Id: Makefile.component,v 1.1 2006/01/06 08:48:53 pipeng Exp $
+
+COMPONENT=XSensorMDA325
+SENSORBOARD=mda320 
+
+

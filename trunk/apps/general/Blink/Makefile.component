@@ -1,0 +1,5 @@
+# $Id: Makefile.component,v 1.1 2006/01/03 07:42:26 mturon Exp $
+
+COMPONENT=Blink
+SENSORBOARD=mts310
+

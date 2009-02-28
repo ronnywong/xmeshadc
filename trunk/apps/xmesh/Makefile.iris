@@ -1,0 +1,21 @@
+# $Id: Makefile.iris,v 1.1.2.1 2007/04/06 01:45:23 mturon Exp $
+
+include Makefile.component
+
+all: iris
+
+# HP set LED on
+iris: M2110_hp
+
+# LP set LED off
+iris: M2110_lp
+
+
+M2110_hp:
+	make freq,2420  route,hp iris leds
+	cp build/iris/main.exe build/iris/$(COMPONENT)_$@.exe
+	
+M2110_lp:
+	make freq,2420  route,lp iris 
+	cp build/iris/main.exe build/iris/$(COMPONENT)_$@.exe
+	

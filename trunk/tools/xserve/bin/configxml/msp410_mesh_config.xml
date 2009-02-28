@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMSP410 Multihop PK1 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="seqno" byteoffset="16" length="2" type="uint16"/>
+			<XField name="voltage" byteoffset="18" length="1" type="uint8">
+				<XConversion function="(1252352/(2*x))" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="quad" byteoffset="19" length="1" type="uint8"/>
+			<XField name="pir" byteoffset="20" length="2" type="uint16"/>
+			<XField name="mag" byteoffset="22" length="2" type="uint16"/>
+			<XField name="audio" byteoffset="24" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0xA0"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x81"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x01"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MSP410 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s seq=%s\n   battery:  = %s mv \n   quad:     = %s ADC\n   pir:      = %s ADC\n   mic:      = %s ADC\n   Mag:      = %s ADC"/>
+				<XDSParam name="printfields" value="nodeid,parent,seqno,voltage,quad,pir,audio,mag"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="msp410_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE msp410_results ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, voltage integer, quad integer, pir integer, audio integer, mag integer )"/>				
+				<XDSParam name="tablename_2" value="msp410_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE msp410_results_l ( result_time timestamp without time zone, epoch integer, nodeid integer, parent integer, voltage integer, quad integer, pir integer, audio integer, mag integer )"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_msp410_results AS ON INSERT TO msp410_results DO ( DELETE FROM msp410_results_l WHERE nodeid = NEW.nodeid;INSERT INTO msp410_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into msp410_results (result_time,epoch,nodeid,parent,voltage,quad,pir,audio,mag) values (now(),%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="seqno,nodeid,parent,voltage,quad,pir,audio,mag"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

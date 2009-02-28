@@ -1,0 +1,561 @@
+#
+# FILE:    freq.extra
+# AUTHOR:  Martin Turon, Jaidev Prabhu
+# DATE:    January 12, 2005
+#
+# Provides the frequency related defines for the CC2420 Radio Chip for MicaZ
+# Frequency can be set by either choosing the Zigbee Channel number or by 
+# setting the 4 digit megahertz number
+#
+#	freq,<freq>	
+#       freq,<channel#>
+#
+# Zigbee Channel Selection
+# CHANNEL_11 - 2405 MHz    CHANNEL_12 - 2410 MHz    CHANNEL_13 - 2415 MHz
+# CHANNEL_14 - 2420 MHz    CHANNEL_15 - 2425 MHz    CHANNEL_16 - 2430 MHz
+# CHANNEL_17 - 2435 MHz    CHANNEL_18 - 2440 MHz    CHANNEL_19 - 2445 MHz
+# CHANNEL_20 - 2450 MHz    CHANNEL_21 - 2455 MHz    CHANNEL_22 - 2460 MHz
+# CHANNEL_23 - 2465 MHz    CHANNEL_24 - 2470 MHz    CHANNEL_25 - 2475 MHz
+# CHANNEL_26 - 2480 MHz
+#
+# Channels 15, 20, 25 & 26 are non-overlapping with 802.11b (WiFi)
+# Provides the frequency related defines for the CC1000 Radio Chip for Mica2
+# Frequency can be set by setting the 3 digit megahertz number
+#
+#
+#	FREQ=<freq>	where freq is one of:
+#		903	903 MHz 	[mica2 default]
+#		915	915 MHz 
+#		433	433 MHz
+#		315 315 MHz
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: freq.extra,v 1.1.4.4 2007/04/06 01:45:46 mturon Exp $
+#
+
+
+########################################################
+#  
+# The CC1000 Radio platforms: 
+#  Mica2 Mica2b Mica2dot M4100 M9100 xsm 
+#  Default frequency: 903MHz (Channel 0)
+#
+########################################################
+ifeq ($(PLATFORM),mica2)
+    RADIO_CHIP = CC1000
+    # If no frequency is chosen select Channel 0 (903 MHz)
+    ifeq ($(FREQ),)
+        FREQ=903
+    endif
+endif
+
+ifeq ($(PLATFORM),mica2b)
+    RADIO_CHIP = CC1000
+    ifeq ($(FREQ),)
+        FREQ=903
+    endif
+endif
+
+ifeq ($(PLATFORM),m4100)
+    RADIO_CHIP = CC1000
+    ifeq ($(FREQ),)
+        FREQ=433
+    endif
+endif
+
+ifeq ($(PLATFORM),m9100)
+    RADIO_CHIP = CC1000
+    ifeq ($(FREQ),)
+        FREQ=903
+    endif
+endif
+
+ifeq ($(PLATFORM),mica2dot)
+    RADIO_CHIP = CC1000
+    ifeq ($(FREQ),)
+        FREQ=903
+    endif
+endif
+
+ifeq ($(PLATFORM),xsm)
+    RADIO_CHIP = CC1000
+    ifeq ($(FREQ),)
+        FREQ=433
+    endif
+endif
+
+########################################################
+#  
+# The CC1020 Radio platforms: 
+#    Mica3
+#  Default frequency: 903MHz (Channel 0)
+#
+########################################################
+ifeq ($(PLATFORM),mica3)
+    RADIO_CHIP = CC1020
+    ifeq ($(FREQ),)
+        FREQ=903
+    endif
+endif
+
+########################################################
+#  
+# The CC2420 Radio platforms: 
+#    Micaz Micazb M2100
+#  Default frequency:  2.405 GHz (Channel 11)
+#
+########################################################
+ifeq ($(PLATFORM),micaz)
+    RADIO_CHIP = CC2420
+    # If no frequency is chosen select Channel 11 (2.405 GHz)
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),micazb)
+    RADIO_CHIP = CC2420
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),m2100)
+    RADIO_CHIP = CC2420
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+
+########################################################
+#  
+# The RF230 Radio platforms: 
+#    Micazc RCB230 M2110
+#  Default frequency:  2.405 GHz (Channel 11)
+#
+########################################################
+ifeq ($(PLATFORM),rcb230)
+    RADIO_CHIP = RF230
+    # If no frequency is chosen select Channel 11 (2.405 GHz)
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),micazc)
+    RADIO_CHIP = RF230
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),m2110)
+    RADIO_CHIP = RF230
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),iris)
+    RADIO_CHIP = RF230
+    ifeq ($(FREQ),)
+    	FREQ=2405
+    endif
+endif
+
+## Any else platforms
+
+ifeq ($(PLATFORM),)
+    $(error No platform set, cannot select default frequency!)
+endif
+
+
+########################################################
+# 
+# Make CC2420 and RF230 based frequeny settings
+#
+# Zigbee Channel Selection
+# CHANNEL_11 - 2405 MHz    CHANNEL_12 - 2410 MHz    CHANNEL_13 - 2415 MHz
+# CHANNEL_14 - 2420 MHz    CHANNEL_15 - 2425 MHz    CHANNEL_16 - 2430 MHz
+# CHANNEL_17 - 2435 MHz    CHANNEL_18 - 2440 MHz    CHANNEL_19 - 2445 MHz
+# CHANNEL_20 - 2450 MHz    CHANNEL_21 - 2455 MHz    CHANNEL_22 - 2460 MHz
+# CHANNEL_23 - 2465 MHz    CHANNEL_24 - 2470 MHz    CHANNEL_25 - 2475 MHz
+# CHANNEL_26 - 2480 MHz
+#
+########################################################
+
+ifeq ($(RADIO_CHANNEL), ) 
+# If never set the channel, then begin to set.
+
+    # Set Frequency by MHZ number on command line - ex: freq,2405
+    ifeq ($(FREQ), 2405) 
+        RADIO_CHANNEL = 11
+    endif
+    ifeq ($(FREQ), 2410)
+        RADIO_CHANNEL = 12
+    endif
+    ifeq ($(FREQ), 2415)
+        RADIO_CHANNEL = 13
+    endif
+    ifeq ($(FREQ), 2420)
+        RADIO_CHANNEL = 14
+    endif
+    ifeq ($(FREQ), 2425)
+        RADIO_CHANNEL = 15
+    endif
+    ifeq ($(FREQ), 2430)
+        RADIO_CHANNEL = 16
+    endif
+    ifeq ($(FREQ), 2435)
+        RADIO_CHANNEL = 17
+    endif
+    ifeq ($(FREQ), 2440)
+        RADIO_CHANNEL = 18
+    endif
+    ifeq ($(FREQ), 2445)
+        RADIO_CHANNEL = 19
+    endif
+    ifeq ($(FREQ), 2450)
+        RADIO_CHANNEL = 20
+    endif
+    ifeq ($(FREQ), 2455)
+        RADIO_CHANNEL = 21
+    endif
+    ifeq ($(FREQ), 2460)
+        RADIO_CHANNEL = 22
+    endif
+    ifeq ($(FREQ), 2465)
+        RADIO_CHANNEL = 23
+    endif
+    ifeq ($(FREQ), 2470)
+        RADIO_CHANNEL = 24
+    endif
+    ifeq ($(FREQ), 2475)
+        RADIO_CHANNEL = 25
+    endif
+    ifeq ($(FREQ), 2480)
+        RADIO_CHANNEL = 26
+    endif
+
+    #Select based on Zigbee Channel Setting
+    ifeq ($(PLATFORM), rcb230)
+    	SET_RADIO_CHANNEL = go
+    endif
+    ifeq ($(PLATFORM), micaz)
+        SET_RADIO_CHANNEL = go
+    endif
+    ifeq ($(PLATFORM), micazb)
+    	SET_RADIO_CHANNEL = go
+    endif
+    ifeq ($(PLATFORM), micazc)
+        SET_RADIO_CHANNEL = go
+    endif    
+    ifeq ($(PLATFORM), m2100)
+        SET_RADIO_CHANNEL = go
+    endif   
+    ifeq ($(PLATFORM), m2110)
+        SET_RADIO_CHANNEL = go
+    endif    
+    
+     # Set Frequency by channel number on command line - ex: freq,11
+    ifeq ($(SET_RADIO_CHANNEL), go)    
+        ifeq ($(FREQ), 11)
+            RADIO_CHANNEL = 11
+        endif
+        ifeq ($(FREQ), 12)
+            RADIO_CHANNEL = 12
+        endif
+        ifeq ($(FREQ), 13)
+            RADIO_CHANNEL = 13
+        endif
+        ifeq ($(FREQ), 14)
+            RADIO_CHANNEL = 14
+        endif
+        ifeq ($(FREQ), 15)
+	    			RADIO_CHANNEL = 15
+        endif
+        ifeq ($(FREQ), 16)
+            RADIO_CHANNEL = 16
+        endif
+        ifeq ($(FREQ), 17)
+            RADIO_CHANNEL = 17
+        endif
+        ifeq ($(FREQ), 18)
+            RADIO_CHANNEL = 18
+        endif
+        ifeq ($(FREQ), 19)
+            RADIO_CHANNEL = 19
+        endif
+        ifeq ($(FREQ), 20)
+            RADIO_CHANNEL = 20
+        endif
+        ifeq ($(FREQ), 21)
+            RADIO_CHANNEL = 21
+        endif
+        ifeq ($(FREQ), 22)
+            RADIO_CHANNEL = 22
+        endif
+        ifeq ($(FREQ), 23)
+            RADIO_CHANNEL = 23
+        endif
+        ifeq ($(FREQ), 24)
+            RADIO_CHANNEL = 24
+        endif
+        ifeq ($(FREQ), 25)
+            RADIO_CHANNEL = 25
+        endif
+        ifeq ($(FREQ), 26)
+            RADIO_CHANNEL = 26
+        endif
+
+    endif
+
+endif
+
+##########################################################################
+#
+# Make CC1000 based frequeny settings
+# 916 MHz Band
+#
+# CHANNEL_00 - 903 MHz     CHANNEL_02 - 904 MHz     CHANNEL_04 - 905 MHz
+# CHANNEL_06 - 906 MHz     CHANNEL_08 - 907 MHz     CHANNEL_10 - 908 MHz
+# CHANNEL_12 - 909 MHz     CHANNEL_14 - 910 MHz     CHANNEL_16 - 911 MHz
+# CHANNEL_18 - 912 MHz     CHANNEL_20 - 913 MHz     CHANNEL_22 - 914 MHz
+# CHANNEL_24 - 915 MHz     CHANNEL_26 - 916 MHz     CHANNEL_28 - 917 MHz
+# CHANNEL_30 - 918 MHz     CHANNEL_32 - 919 MHz     CHANNEL_34 - 920 MHz
+# CHANNEL_36 - 921 MHz     CHANNEL_38 - 922 MHz     CHANNEL_40 - 923 MHz
+# CHANNEL_42 - 924 MHz     CHANNEL_44 - 925 MHz     CHANNEL_46 - 926 MHz
+# CHANNEL_48 - 927 MHz
+#
+#  Original Channels defined by TinyOS 1.1.0
+# CHANNEL_100 - 914.077 MHz     CHANNEL_102 - 915_988 MHz
+#
+##########################################################################
+ifeq ($(RADIO_CLASS), )
+ifeq ($(RADIO_CHANNEL), )
+    ifeq ($(FREQ), 903)
+      RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 00
+    endif
+    ifeq ($(FREQ), 904)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 02
+    endif
+    ifeq ($(FREQ), 905)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 04
+    endif
+    ifeq ($(FREQ), 906)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 06
+    endif
+    ifeq ($(FREQ), 907)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 08
+    endif
+    ifeq ($(FREQ), 908)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 10
+    endif
+    ifeq ($(FREQ), 909)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 12
+    endif
+    ifeq ($(FREQ), 910)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 14
+    endif
+    ifeq ($(FREQ), 911)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 16
+    endif
+    ifeq ($(FREQ), 912)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 18
+    endif
+    ifeq ($(FREQ), 913)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 20
+    endif
+    ifeq ($(FREQ), 914)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 22
+    endif
+    ifeq ($(FREQ), 915)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 24
+    endif
+    ifeq ($(FREQ), 916)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 26
+    endif
+    ifeq ($(FREQ), 917)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 28
+    endif
+    ifeq ($(FREQ), 918)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 30
+    endif
+    ifeq ($(FREQ), 919)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 32
+    endif
+    ifeq ($(FREQ), 920)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 34
+    endif
+    ifeq ($(FREQ), 921)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 36
+    endif
+    ifeq ($(FREQ), 922)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 38
+    endif
+    ifeq ($(FREQ), 923)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 40
+    endif
+    ifeq ($(FREQ), 924)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 42
+    endif
+    ifeq ($(FREQ), 925)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 44
+    endif
+    ifeq ($(FREQ), 926)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 46
+    endif
+    ifeq ($(FREQ), 927)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 48
+    endif
+    ifeq ($(FREQ), 914.077)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 100
+    endif
+    ifeq ($(FREQ), 915.988)
+    	RADIO_CLASS   = 916
+    	RADIO_CHANNEL = 102
+    endif
+    ifeq ($(FREQ), 869)
+    	RADIO_CLASS   = 868
+    	RADIO_CHANNEL = 00
+    endif
+    ifeq ($(FREQ), 870)
+    	RADIO_CLASS   = 868
+    	RADIO_CHANNEL = 02
+    endif     
+endif
+endif
+
+#############################################################
+# 433 MHz Band
+#
+# CHANNEL_00 - 433.113 MHz     CHANNEL_02 - 433.616 MHz
+# CHANNEL_04 - 434.108 MHz     CHANNEL_06 - 434.618 MHz
+#
+#  Original Channels defined by TinyOS 1.1.0
+# CHANNEL_100 - 433.002 MHz    CHANNEL_102 - 434.845 MHz
+#
+#############################################################
+ifeq ($(RADIO_CLASS), )
+ifeq ($(RADIO_CHANNEL), )
+    ifeq ($(FREQ), 433)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 00
+    endif    
+    ifeq ($(FREQ), 433.5)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 02
+    endif    
+    ifeq ($(FREQ), 434)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 04
+    endif    
+    ifeq ($(FREQ), 434.5)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 06
+    endif
+    ifeq ($(FREQ), 433.002)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 100
+    endif
+    ifeq ($(FREQ), 434.845)
+        RADIO_CLASS   = 433
+        RADIO_CHANNEL = 102
+    endif
+endif
+endif
+
+#############################################################
+# 315 MHz Band
+#
+# CHANNEL_00 - 315 MHz
+#  Original Channels co-efficients defined by TinyOS 1.1.0
+# CHANNEL_100 - 315.178 MHz  
+#############################################################
+ifeq ($(RADIO_CLASS), )
+ifeq ($(RADIO_CHANNEL), )
+    ifeq ($(FREQ), 315)
+        RADIO_CLASS   = 315
+        RADIO_CHANNEL = 00
+    endif
+    ifeq ($(FREQ), 315.178)
+        RADIO_CLASS   = 315
+        RADIO_CHANNEL = 100
+    endif
+endif
+endif
+
+## Final settings based on radio type.
+
+ifeq ($(RADIO_CHIP),RF230)
+    CFLAGS += -DRF230_DEF_CHANNEL=$(RADIO_CHANNEL) 
+endif
+
+ifeq ($(RADIO_CHIP),CC2420)
+    CFLAGS += -DCC2420_DEF_CHANNEL=$(RADIO_CHANNEL) 
+endif
+
+ifeq ($(RADIO_CHIP), CC1000)
+    CFLAGS += -DCC1K_DEFAULT_FREQ=RADIO_$(RADIO_CLASS)BAND_CHANNEL_$(RADIO_CHANNEL)
+    ifeq ($(RADIO_CLASS),433)
+        PFLAGS +=-DFREQ_433_MHZ 
+    endif
+endif
+
+ifeq ($(RADIO_CHIP), CC1020)
+
+    #Freq Hopping Parameters
+    ifeq ($(FREQ_HOP),FREQ_HOP_DISABLE)
+         FREQ_HOP=0
+    endif
+
+    ifeq ($(FREQ_HOP),FREQ_HOP_ENABLE)
+         FREQ_HOP=1
+    endif
+ 
+    ifeq ($(FREQ_HOP_SEED_DIST),NONE)
+         FREQ_HOP_SEED_DIST=0
+    endif
+
+    ifeq ($(FREQ_HOP_SEED_DIST),NETWORK)
+         FREQ_HOP_SEED_DIST=1
+    endif
+
+    #Push in the defines here
+    CFLAGS += -DRF_FREQ_HOP_DEFAULT=$(FREQ_HOP)
+    CFLAGS += -DRF_FREQ_HOP_SEED_DEFAULT=$(FREQ_HOP_SEED)
+    CFLAGS += -DRF_FREQ_HOP_SEED_DIST_DEFAULT=$(FREQ_HOP_SEED_DIST) 
+    CFLAGS += -DRF_CHANNEL_DEFAULT=RADIO_$(RADIO_CLASS)BAND_CHANNEL_$(RADIO_CHANNEL)
+
+endif
+
+
+

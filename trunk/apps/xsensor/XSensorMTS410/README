@@ -1,0 +1,8 @@
+README
+
+
+Description:
+-Read battary,temperature, humidity, light, accel,pressure,pir,mic sensor readings
+-control two relays
+-Output message to uart port
+-Output message to radio port

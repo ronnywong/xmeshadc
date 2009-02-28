@@ -1,0 +1,178 @@
+#
+# FILE:    freq.extra
+# AUTHOR:  Martin Turon, Jaidev Prabhu, Pi Peng
+# DATE:    January 12, 2005
+#
+# Provides the frequency related defines for the CC2420 Radio Chip for MicaZ
+# Frequency can be set by either choosing the Zigbee Channel number or by 
+# setting the 4 digit megahertz number
+#
+#	freq,<freq>	
+#       freq,<channel#>
+#
+# Zigbee Channel Selection
+# CHANNEL_11 - 2405 MHz    CHANNEL_12 - 2410 MHz    CHANNEL_13 - 2415 MHz
+# CHANNEL_14 - 2420 MHz    CHANNEL_15 - 2425 MHz    CHANNEL_16 - 2430 MHz
+# CHANNEL_17 - 2435 MHz    CHANNEL_18 - 2440 MHz    CHANNEL_19 - 2445 MHz
+# CHANNEL_20 - 2450 MHz    CHANNEL_21 - 2455 MHz    CHANNEL_22 - 2460 MHz
+# CHANNEL_23 - 2465 MHz    CHANNEL_24 - 2470 MHz    CHANNEL_25 - 2475 MHz
+# CHANNEL_26 - 2480 MHz
+#
+# Channels 15, 20, 25 & 26 are non-overlapping with 802.11b (WiFi)
+# Provides the frequency related defines for the CC1000 Radio Chip for Mica2
+# Frequency can be set by setting the 3 digit megahertz number
+#
+#
+#	FREQ=<freq>	where freq is one of:
+#		903	903 MHz 	[mica2 default]
+#		915	915 MHz 
+#		433	433 MHz
+#		315 	315 MHz
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: freq.extra,v 1.1 2006/03/16 05:58:26 pipeng Exp $
+#
+
+ifeq ($(PLATFORM),telosb)
+    RADIO_CHIP = CC2420
+    # If no frequency is chosen select Channel 11 (2.405 GHz)
+    ifeq ($(FREQ),)
+    FREQ=2405
+    endif
+endif
+
+ifeq ($(PLATFORM),)
+    $(error No platform set, cannot select default frequency!)
+endif
+
+
+########################################################
+# 
+# Make Micaz based frequeny settings
+#
+########################################################
+ifeq ($(RADIO_CHANNEL), )
+
+    # Set Frequency by MHZ number on command line - ex: freq,2405
+    ifeq ($(FREQ), 2405) 
+        RADIO_CHANNEL = 11
+    endif
+    ifeq ($(FREQ), 2410)
+        RADIO_CHANNEL = 12
+    endif
+    ifeq ($(FREQ), 2415)
+        RADIO_CHANNEL = 13
+    endif
+    ifeq ($(FREQ), 2420)
+        RADIO_CHANNEL = 14
+    endif
+    ifeq ($(FREQ), 2425)
+        RADIO_CHANNEL = 15
+    endif
+    ifeq ($(FREQ), 2430)
+        RADIO_CHANNEL = 16
+    endif
+    ifeq ($(FREQ), 2435)
+        RADIO_CHANNEL = 17
+    endif
+    ifeq ($(FREQ), 2440)
+        RADIO_CHANNEL = 18
+    endif
+    ifeq ($(FREQ), 2445)
+        RADIO_CHANNEL = 19
+    endif
+    ifeq ($(FREQ), 2450)
+        RADIO_CHANNEL = 20
+    endif
+    ifeq ($(FREQ), 2455)
+        RADIO_CHANNEL = 21
+    endif
+    ifeq ($(FREQ), 2460)
+        RADIO_CHANNEL = 22
+    endif
+    ifeq ($(FREQ), 2465)
+        RADIO_CHANNEL = 23
+    endif
+    ifeq ($(FREQ), 2470)
+        RADIO_CHANNEL = 24
+    endif
+    ifeq ($(FREQ), 2475)
+        RADIO_CHANNEL = 25
+    endif
+    ifeq ($(FREQ), 2480)
+        RADIO_CHANNEL = 26
+    endif
+
+    #Select based on MicaZ Channel Setting
+    ifeq ($(PLATFORM), telosb)
+    
+        ifeq ($(FREQ), 11)
+            RADIO_CHANNEL = 11
+        endif
+        ifeq ($(FREQ), 12)
+            RADIO_CHANNEL = 12
+        endif
+        ifeq ($(FREQ), 13)
+            RADIO_CHANNEL = 13
+        endif
+        ifeq ($(FREQ), 14)
+            RADIO_CHANNEL = 14
+        endif
+        ifeq ($(FREQ), 15)
+	    RADIO_CHANNEL = 15
+        endif
+        ifeq ($(FREQ), 16)
+            RADIO_CHANNEL = 16
+        endif
+        ifeq ($(FREQ), 17)
+            RADIO_CHANNEL = 17
+        endif
+        ifeq ($(FREQ), 18)
+            RADIO_CHANNEL = 18
+        endif
+        ifeq ($(FREQ), 19)
+            RADIO_CHANNEL = 19
+        endif
+        ifeq ($(FREQ), 20)
+            RADIO_CHANNEL = 20
+        endif
+        ifeq ($(FREQ), 21)
+            RADIO_CHANNEL = 21
+        endif
+        ifeq ($(FREQ), 22)
+            RADIO_CHANNEL = 22
+        endif
+        ifeq ($(FREQ), 23)
+            RADIO_CHANNEL = 23
+        endif
+        ifeq ($(FREQ), 24)
+            RADIO_CHANNEL = 24
+        endif
+        ifeq ($(FREQ), 25)
+            RADIO_CHANNEL = 25
+        endif
+        ifeq ($(FREQ), 26)
+            RADIO_CHANNEL = 26
+        endif
+
+    endif
+
+endif
+
+ifeq ($(RADIO_CHIP),CC2420)
+
+    ifeq ($(RADIO_POWER),)
+
+        RADIO_POWER = TXPOWER_MAX
+
+    endif
+
+    CFLAGS += -DCC2420_DEF_CHANNEL=$(RADIO_CHANNEL) 
+    
+    CFLAGS += -DCC2420_TXPOWER=$(RADIO_POWER)
+
+endif
+
+
+

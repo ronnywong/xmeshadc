@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMDA500 XSENSOR P1 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="light" byteoffset="9" length="2" type="uint16"/>
+			<XField name="accel_x" byteoffset="11" length="2" type="uint16">
+				<XConversion function="1000.0 * (1.0 - (500 - x)/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accel_x" type="uint16"/>					
+				</XConversion>
+
+			</XField>
+			<XField name="accel_y" byteoffset="13" length="2" type="uint16">
+				<XConversion function="1000.0 * (1.0 - (500 - x)/((500 - 400)/2))" returntype="float">
+					<XConvParam variablename="x" fieldname="accel_y" type="uint16"/>					
+				</XConversion>
+			</XField>
+			<XField name="mic0" byteoffset="15" length="2" type="uint16"/>
+			<XField name="mic1" byteoffset="17" length="2" type="uint16"/>
+			<XField name="mic2" byteoffset="19" length="2" type="uint16"/>
+			<XField name="mic3" byteoffset="21" length="2" type="uint16"/>
+			<XField name="mic4" byteoffset="23" length="2" type="uint16"/>
+			<XField name="mic"  byteoffset="15" length="2" type="uint16">
+				<XConversion function="(x1+x2+x3+x4+x5)/5" returntype="uint16">
+					<XConvParam variablename="x1" fieldname="mic0" type="uint16"/>					
+					<XConvParam variablename="x2" fieldname="mic1" type="uint16"/>					
+					<XConvParam variablename="x3" fieldname="mic2" type="uint16"/>					
+					<XConvParam variablename="x4" fieldname="mic3" type="uint16"/>					
+					<XConvParam variablename="x5" fieldname="mic4" type="uint16"/>					
+				</XConversion>
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x02"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x01"/>
+					</XCond>				
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x81"/>
+					</XCond>				
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS510 [sensor data converted to engineering units]:\n   health:     node id=%s\n   light:        =%s ADC counts\n   X-axis Accel: =%s g \n   Y-axis Accel: =%s g \n   mic = %s ADC counts "/>
+				<XDSParam name="printfields" value="nodeid,light,accel_x,accel_y,mic"/>
+			</XDataSink>
+			<XDataSink name="Generic Alert Datasink">
+				<XDSParam name="light" value="[0,3000]"/>
+				<XDSParam name="accel_x" value="[-2000,2000]"/>
+				<XDSParam name="accel_y" value="[-2000,2000]"/>
+				<XDSParam name="mic" value="[0,800]"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mts510_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mts510_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer,accel_x integer, accel_y integer,mag_x integer, mag_y integer, mic integer)"/>				
+				<XDSParam name="tablename_2" value="mts510_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mts510_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer,accel_x integer, accel_y integer,mag_x integer, mag_y integer, mic integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mts510_results AS ON INSERT TO mts510_results DO ( DELETE FROM mts510_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mts510_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mts510_results (result_time,nodeid,light,accel_x,accel_y,mic) values (now(),%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,light,accel_x,accel_y,mic"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

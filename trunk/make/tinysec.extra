@@ -1,0 +1,22 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: tinysec.extra,v 1.1 2006/01/03 07:42:37 mturon Exp $
+
+#########################################################################
+# TinySec processing
+#########################################################################
+# The tinysec keyfile to use and the default key name (this re matches the
+# first key. you can explicitly list keys by: make mica KEYNAME=mykeyname
+KEYFILE := $(HOME)/.tinyos_keyfile
+KEYNAME := '\w+'
+
+TINYSEC_KEY := $(shell mote-key -kf $(KEYFILE) -kn $(KEYNAME))
+ifeq ($(TINYSEC_KEY),)
+$(error tinysec key has not been properly set. It is needed for tinysec. \
+	Check to make sure that the script exists)
+endif
+
+PFLAGS := $(PFLAGS) -I%T/lib/TinySec -I%T/platform/%p/TinySec -DTINYSEC_KEY="$(TINYSEC_KEY)" -DTINYSEC_KEYSIZE=8
+ifeq ($(TARGET),mica2dot)
+PFLAGS := $(PFLAGS) -I%T/platform/mica2/TinySec
+endif
+

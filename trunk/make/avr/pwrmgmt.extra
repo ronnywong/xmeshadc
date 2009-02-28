@@ -1,0 +1,25 @@
+#
+# FILE:    pwrmgmt.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# CPU_PwrMgmt - Specify whether HPLPowerManagement is enabled  
+#               and the CPU should sleep when the task queue is empty   
+#
+#	pwrmgmt,<pwrmgmt>	
+#
+#	PWRMGMT=<pwrmgmt>	where pwrmgmt(1 Byte in binary) is one of :
+#		0 = disable
+#		1 = enabled
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: pwrmgmt.extra,v 1.1 2006/01/15 05:10:57 husq Exp $
+#
+
+ifeq ($(PWRMGMT),)
+    PWRMGMT=0
+endif
+
+PFLAGS += -DCPU_PWRMGMT=$(PWRMGMT)
+		

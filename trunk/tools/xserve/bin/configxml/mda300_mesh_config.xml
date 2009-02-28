@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMDA300 Multihop PK6 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humid" byteoffset="18" length="2" type="uint16">
+				<XConversion function="(-39.6 + 0.01*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="float">
+					<XConvParam variablename="x" fieldname="humid" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(-39.6 + 0.01*x)" returntype="float">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc0" byteoffset="22" length="2" type="uint16">
+				<XConversion function="x*(1/11.5) - 34" returntype="float">
+					<XConvParam variablename="x" fieldname="adc0" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc1" byteoffset="24" length="2" type="uint16">
+				<XConversion function="x*(1/14.0) - 28" returntype="float">
+					<XConvParam variablename="x" fieldname="adc1" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="adc2" byteoffset="26" length="2" type="uint16"/>
+			<XField name="digi0" byteoffset="28" length="2" type="uint16"/>
+			<XField name="digi1" byteoffset="30" length="2" type="uint16"/>
+			<XField name="digi2" byteoffset="32" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x86"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x06"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s battery=%s mV\n   echo10: Soil Moisture=%s %%\n   echo20: Soil Moisture=%s %%\n   soil temperature   =%s F\n   temperature:       =%s C \n   humidity:          =%s %%"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,adc0,adc1,adc2,humtemp,humid"/>
+			</XDataSink>
+			<XDataSink name="Generic Alert Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="humid" value="[0,100]"/>
+				<XDSParam name="humtemp" value="[-5,45]"/>
+				<XDSParam name="adc0" value="[0,100]"/>
+				<XDSParam name="adc1" value="[0,100]"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mda300_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mda300_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer,digi0 integer,digi1 integer,digi2 integer,voltage integer,humid integer, humtemp integer)"/>				
+				<XDSParam name="tablename_2" value="mda300_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mda300_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer,digi0 integer,digi1 integer,digi2 integer,voltage integer,humid integer, humtemp integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mda300_results AS ON INSERT TO mda300_results DO ( DELETE FROM mda300_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mda300_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mda300_results (result_time,nodeid,parent,voltage,humid,humtemp,adc0,adc1,adc2,digi0,digi1,digi2) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,voltage,humid,humtemp,adc0,adc1,adc2,digi0,digi1,digi2"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMDA300 Multihop PK7 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x87"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x07"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s battery=%s mV"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mda300_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mda300_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer,digi0 integer,digi1 integer,digi2 integer,voltage integer,humid integer, humtemp integer)"/>				
+				<XDSParam name="tablename_2" value="mda300_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mda300_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer,digi0 integer,digi1 integer,digi2 integer,voltage integer,humid integer, humtemp integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mda300_results AS ON INSERT TO mda300_results DO ( DELETE FROM mda300_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mda300_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mda300_results (result_time,nodeid,parent,voltage) values (now(),%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,voltage"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+	<XFieldExtractor name="XMDA300 Multihop PK8 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="humid" byteoffset="18" length="2" type="uint16">
+				<XConversion function="(-39.6 + 0.01*y - 25.0)*(0.01 + 0.00008 * x) - 4.0 + 0.0405 * x - 0.0000028 * x * x" returntype="float">
+					<XConvParam variablename="x" fieldname="humid" type="float"/>					
+					<XConvParam variablename="y" fieldname="humtemp" type="float"/>				
+				</XConversion>			
+			</XField>
+			<XField name="humtemp" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(-38.4 + 0.0098*x)" returntype="float">
+					<XConvParam variablename="x" fieldname="humtemp" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="p_adc0" byteoffset="22" length="2" type="uint16">
+				<XConversion function="((x*250.0/4096.0)-125)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="p_adc0" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="p_adc1" byteoffset="24" length="2" type="uint16">
+				<XConversion function="((x*250.0/4096.0)-125)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="p_adc1" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="p_adc2" byteoffset="26" length="2" type="uint16">
+				<XConversion function="((x*250.0/4096.0)-125)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="p_adc2" type="float"/>					
+				</XConversion>			
+			</XField>
+			<XField name="p_adc3" byteoffset="28" length="2" type="uint16">
+				<XConversion function="((x*250.0/4096.0)-125)/10.0" returntype="float">
+					<XConvParam variablename="x" fieldname="p_adc3" type="float"/>					
+				</XConversion>			
+			</XField>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x81"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x88"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x08"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA300 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s battery=%s mV \n   temperature:       =%s C \n   humidity:          =%s %%\n   	p_adc0	=%f mv \n   	p_adc1	=%f mv \n   	p_adc2	=%f mv\n   	p_adc3	=%f mv"/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,humtemp,humid,p_adc0,p_adc1,p_adc2,p_adc3"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mda300_precision_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mda300_precision_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,p_adc0 integer, p_adc1 integer, p_adc2 integer,p_adc3 integer,voltage integer,humid integer, humtemp integer)"/>				
+				<XDSParam name="tablename_2" value="mda300_precision_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mda300_precision_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,p_adc0 integer, p_adc1 integer, p_adc2 integer,p_adc3 integer,voltage integer,humid integer, humtemp integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mda300_precision_results AS ON INSERT TO mda300_precision_results DO ( DELETE FROM mda300_precision_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mda300_precision_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mda300_precision_results (result_time,nodeid,parent,voltage,humid,humtemp,p_adc0,p_adc1,p_adc2,p_adc3) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,voltage,humid,humtemp,p_adc0,p_adc1,p_adc2,p_adc3"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>
+

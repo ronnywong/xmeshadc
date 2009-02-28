@@ -1,0 +1,7 @@
+README 
+
+
+Description:
+-Read humidity, temperature,  gas, voltage, and eeprom
+-Output message to uart port
+-Output message to radio port

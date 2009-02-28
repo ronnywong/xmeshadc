@@ -1,0 +1,15 @@
+#
+# FILE:    base.extra
+# AUTHOR:  Martin Turon
+# DATE:    February 16, 2004
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: base.extra,v 1.1 2006/01/03 07:42:40 mturon Exp $
+#
+
+PFLAGS += -DBASE_STATION
+
+ifeq ($(BASE),ping)
+GNRT_NODE=yes
+endif

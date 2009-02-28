@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+#
+# FILE:         settos
+# AUTHOR:       Martin Turon
+# DATE CREATED: Aug 1, 2004
+# DESCRIPTION:  Support script for having multiple TOS trees
+#               This is done by making /opt/tinyos-1.x a symbolic link
+#               to an actual tree.  Common trees include:
+#                    tinyos-1.1.0     // specific rpm    `settos 1.0`
+#                    tinyos-1.cvs     // latest from cvs `settos cvs`
+#                    tinyos-1.user    // local user tree `settos user`
+#
+# $Id: settos,v 1.6 2006/02/18 02:45:01 mturon Exp $
+#
+$ver  = shift();
+$root = $ENV{TOSROOT};
+
+chdir("/opt");
+if (-d $root) {
+    print "Warning: $root directory moved to $root.$ver\n";
+    rename ($root, "$root.$ver");
+} 
+if (!unlink $root) {
+    print "Warning: $root will be made into a symbolic link\n";
+}
+if (`ln -s $root.$ver $root`) {
+    print "Error: could no create $root as symbolic link\n"; 
+}
+
+print "Set TinyOS tree to: $root.$ver";

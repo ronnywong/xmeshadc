@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMTS101 Sensor Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<!--
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			/-->
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="5" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="6" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="9" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="temp" byteoffset="11" length="2" type="uint16">
+				<XConversion function="((1/(.001307050 + 0.000214381 * log( (10000 * (1023-x))/x   ) + 0.000000093 * (log( (10000 * (1023-x))/x )^3))) - 273.15)" returntype="float">
+					<XConvParam variablename="x" fieldname="temp" type="uint16"/>					
+				</XConversion>			
+			</XField>
+			<XField name="light" byteoffset="13" length="2" type="uint16">
+				<XConversion function="(y * (1252352/x) / 1023)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+					<XConvParam variablename="y" fieldname="light" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="adc0" byteoffset="15" length="2" type="uint16"/>
+			<XField name="adc1" byteoffset="17" length="2" type="uint16"/>
+			<XField name="adc2" byteoffset="19" length="2" type="uint16"/>
+			<XField name="adc3" byteoffset="21" length="2" type="uint16"/>
+			<XField name="adc4" byteoffset="23" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x00"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x32"/>
+					</XCond>
+
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x82"/>
+				</XCond>				
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MTS101 [sensor data converted to engineering units]:\n   health:     node id=%s		battery:  = %s mv \n   tempurature: =%s degC		light: = %s mv \n   adc2 = %s mv   adc3 = %s mv	adc4 = %s mv "/>
+				<XDSParam name="printfields" value="nodeid,voltage,temp,light,adc2,adc3,adc4"/>
+			</XDataSink>
+			<XDataSink name="Generic Alert Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="temp" value="[-5,45]"/>
+				<XDSParam name="light" value="[0,3000]"/>
+				<XDSParam name="adc2" value="[0,3200]"/>
+				<XDSParam name="adc3" value="[0,3200]"/>
+				<XDSParam name="adc4" value="[0,3200]"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mts101_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mts101_results ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer, adc2 integer, adc3 integer, adc4 integer)"/>				
+				<XDSParam name="tablename_2" value="mts101_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mts101_results_l ( result_time timestamp without time zone,epoch integer, nodeid integer, parent integer,voltage integer, temp integer, light integer, adc2 integer, adc3 integer, adc4 integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mts101_results AS ON INSERT TO mts101_results DO ( DELETE FROM mts101_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mts101_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mts101_results (result_time,nodeid,voltage,temp,light,adc2,adc3,adc4) values (now(),%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,voltage,temp,light,adc2,adc3,adc4"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>

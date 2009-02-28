@@ -1,0 +1,7 @@
+# $Id: Makefile.component,v 1.2 2006/01/09 16:55:03 abroad Exp $
+
+COMPONENT=PressureSensor
+
+DEFINES += -DTOSH_DATA_LENGTH=60
+#DEFINES += -DROUTE_UPDATE_INTERVAL=10000
+

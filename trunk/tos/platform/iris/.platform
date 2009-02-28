@@ -1,0 +1,21 @@
+#
+# Internal platform:
+#    /opt/MoteWorks/tos/platforms/rcb230/.platform
+#
+# Copyright (c) 2006 Crossbow Technology, Inc.  
+#
+# $Id: .platform,v 1.1.2.1 2007/04/06 01:46:39 mturon Exp $
+#
+
+@opts = ("-gcc=avr-gcc",
+	 "-mmcu=atmega1281",
+	 "-fnesc-target=avr",
+	 "-fnesc-no-debug");
+
+push @opts, "-mingw-gcc" if $cygwin;
+
+@commonplatforms = (
+	"micazc",
+	"atm1281",
+	"atm128"
+	);

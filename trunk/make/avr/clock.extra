@@ -1,0 +1,47 @@
+#
+# FILE:    clock.extra
+# AUTHOR:  Hu Siquan
+# DATE:    Dec 8, 2005
+#
+# Provides speed of processor set in fuses
+#
+#	clock,<clock>	
+#
+#	CLOCK=<clock>	where clock is one of:
+#		0 = External crystal
+#		1 = 1MHz
+#		2 = 2MHz
+#		4 = 4MHz
+#		8 = 8MHz
+#
+# Copyright (c) 2004-2005 Crossbow Technology, Inc.  All Rights Reserved.
+#
+# $Id: clock.extra,v 1.1 2006/01/15 05:10:57 husq Exp $
+#
+
+ifeq ($(CLOCK),)
+    CLOCK=0
+endif
+
+PFLAGS += -DCPU_CLK=$(CLOCK)
+		
+ifeq ($(CLOCK), 0)
+		AVR_FUSE_L = 0xff
+endif
+
+ifeq ($(CLOCK), 1)
+		AVR_FUSE_L = 0xc1
+endif
+
+ifeq ($(CLOCK), 2)
+		AVR_FUSE_L = 0xc2
+endif
+
+ifeq ($(CLOCK), 4)
+		AVR_FUSE_L = 0xc3
+endif
+
+ifeq ($(CLOCK), 8)
+		AVR_FUSE_L = 0xc4
+endif
+

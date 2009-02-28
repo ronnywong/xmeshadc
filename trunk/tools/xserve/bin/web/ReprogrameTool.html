@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>无标题文档</title>
+<style type="text/css">
+<!--
+body {
+	margin-top: 1px;
+}
+-->
+</style></head>
+
+<body>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+function CovertPath(s)
+{
+	var i;
+	var s2=s;
+	while(s2.indexOf("\\")>0)
+	{
+		i = s2.indexOf("\\");
+		s2 = s2.substring(0, i)+"/"+s2.substring(i+1,s2.length);
+	}
+	return s2;
+}
+
+function getcmd()
+{
+	var str="cmd=";
+	if(cmdset[0].checked)
+	{
+		str="cmd=11 ";
+	}
+	if(cmdset[2].checked)
+	{
+		str="cmd=12 ";
+	}
+	if(cmdset[1].checked)
+	{
+		str="cmd=13 ";
+	}
+	return str;
+}
+
+function getval()
+{
+	var str="val=";
+	var data=0;
+	var tmpval=0;
+	if(cmdset[0].checked)
+	{
+		str=str+" -q"
+	}
+	if(cmdset[1].checked)
+	{
+		tmpval=bootimage.selectedIndex;
+		str=str+" -i "+tmpval;
+		str=str+" -b "
+	}
+	if(cmdset[2].checked)
+	{
+		tmpval=imgsel.selectedIndex;
+		str=str+" -i "+tmpval;
+		tmpval=CovertPath(imagefile.value);
+		if(tmpval=="")
+		{
+			alert("no image file !")
+			return "";
+		}
+		str=str+" -f "+tmpval;
+		tmpval=voltval.value;	
+		if(tmpval=="")
+		{
+			tmpval=="2.7";
+		}
+		str=str+" -v "+tmpval;
+	}
+	return str;
+}
+
+function getnodeliststr(s)
+{
+    var str="";
+    var i;
+    str=s;
+    i = str.indexOf(",");
+    while(i>0)
+    {
+		str = str.substring(0, i)+" "+str.substring(i+1,str.length);
+		i = str.indexOf(",");
+    }
+    return str;
+    
+}
+
+function getsetting()
+{
+	var str="";
+	var comnum=0;
+	str=str+" -sf localhost:9001";
+
+	if(allnodes.checked)
+	{
+		str=str+" n=all";
+	}
+	else
+	{
+		if(nodeid.value!="")
+		{
+			str=str+" "+getnodeliststr(nodeid.value);
+		}
+		else
+		{
+			alert("no motes specified! " );
+			return "";
+		}
+	}
+	return str;
+}
+
+function setvalue() 
+{
+var cmdstr="";
+var valstr="";
+var param="";
+var tmpstr="";
+valstr=getval();
+cmdstr=getcmd();
+if(valstr=="")
+{
+return;
+}
+
+tmpstr=getsetting();
+if(tmpstr=="")
+{
+return;
+}
+valstr=valstr + tmpstr;
+param="xotap.cgi?"+cmdstr+"&"+valstr;
+window.parent.frames["blFrame"].document.location.replace(param);
+}
+
+
+//-->
+</SCRIPT>
+<table width="653" border="0">
+  <tr>
+    <td width="102"><strong>Send To :</strong></td>
+    <td colspan="3">Nodes:
+      <input name="nodeid" type="text" id="nodeid" size="10"> 
+(0,1,...) </td>
+    <td>All Nodes:
+    <input name="allnodes" type="checkbox" id="allnodes" value="checkbox"> </td>
+  </tr>
+  <tr>
+    <td colspan="5"><strong>OTAP </strong></td>
+  </tr>
+  <tr>
+    <td colspan="2"><input name="cmdset" type="radio" value="radiobutton" checked> 
+    Query</td>
+    <td colspan="2">&nbsp;</td>
+    <td width="279">&nbsp;      </td>
+  </tr>
+</table>
+<table width="653" border="0">
+  <tr>
+    <td align="left" valign="top">&nbsp;</td>
+    <td colspan="2" align="left">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left" valign="bottom"><input type="radio" name="cmdset" value="radiobutton">
+    Boot</td>
+    <td colspan="2" align="left">Image :
+      <select name="bootimage" id="bootimage">
+        <option selected>Slot 0</option>
+        <option>Slot 1</option>
+        <option>Slot 2</option>
+        <option>Slot 3</option>
+      </select></td>
+  </tr>
+  <tr>
+    <td colspan="3" align="left" valign="top">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left" valign="bottom"><input type="radio" name="cmdset" value="radiobutton">
+Download</td>
+    <td width="229" align="left">Image :
+      <select name="imgsel" id="imgsel">
+        <option selected>Slot 0</option>
+        <option>Slot 1</option>
+        <option>Slot 2</option>
+        <option>Slot 3</option>
+      </select></td>
+    <td width="268" align="left">Voltage:
+      <input name="voltval" type="text" id="voltval" value="2.7" size="8" maxlength="3">
+    (min)</td>
+  </tr>
+</table>
+<table width="653" border="0">
+  <tr>
+    <td width="102">Image File: </td>
+    <td colspan="5"><input name="imagefile" type="file" id="imagefile" size="53"></td>
+  </tr>
+  <tr>
+    <td colspan="2"></td>
+    <td width="341" align="center"><input type="submit" name="Submit" value="   S E N D   " onClick="setvalue()"></td>
+    <td width="42">&nbsp;</td>
+  </tr>
+
+</table>
+</body>
+</html>

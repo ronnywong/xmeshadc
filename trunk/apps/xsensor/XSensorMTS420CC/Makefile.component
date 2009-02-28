@@ -1,0 +1,6 @@
+# $Id: Makefile.component,v 1.1.2.1 2007/01/24 08:43:25 chenrl Exp $
+
+COMPONENT=TestMTS420cc
+SENSORBOARD=mts420cc
+MSG_SIZE=50
+GOALS +=uart1,9600

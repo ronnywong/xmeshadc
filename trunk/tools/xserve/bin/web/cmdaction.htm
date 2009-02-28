@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+<title>无标题文档</title>
+<style type="text/css">
+<!--
+body {
+	margin-top: 1px;
+}
+-->
+</style></head>
+
+<body>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+
+function getsetting()
+{
+	var str="set=";
+	var tmpstr="";
+	var val=0;
+	if(nodeid.value=="65535" || groupid.value=="255")
+	{
+		window.alert("BroadCast is not permitted");
+		return;
+	}
+	str=str+nodeid.value+","+groupid.value;
+
+	return str;
+}
+
+function wakefunc()
+{
+	var str="";
+	var exstr="estr=0";
+	str=getsetting();
+	var param="xcmd.cgi?cmd=3&val=0&"+exstr+"&"+str;
+	window.parent.frames["botFrame"].document.location.replace(param);
+}
+function sleepfunc()
+{
+	var str="";
+	var exstr="estr=0";
+	str=getsetting();
+	var param="xcmd.cgi?cmd=2&val=0&"+exstr+"&"+str;
+	window.parent.frames["botFrame"].document.location.replace(param);
+}
+function resetfunc()
+{
+	var str="";
+	var exstr="estr=0";
+	str=getsetting();
+	var param="xcmd.cgi?cmd=1&val=0&"+exstr+"&"+str;
+	window.parent.frames["botFrame"].document.location.replace(param);
+}
+
+function refreshnl()
+{
+	var str="";
+	var exstr="estr=0";
+	str=getsetting();
+	var param="xcmd.cgi?cmd=8&val=0&"+exstr+"&"+str;
+	window.parent.frames["botFrame"].document.location.replace(param);
+
+}
+
+function setleds()
+{
+var cmd="cmd=20";
+var val="val=0";
+var exstr="estr=0";
+var set="set=";
+var param="";
+var value=0;
+var i=0;
+for(i = 0; i < rradio.length; i++)
+{
+	if(rradio[i].checked)
+	{
+		if(i==0)
+		{
+			value=value+1;
+		}
+		if(i==2)
+		{
+			window.alert("Toggle is not permited for SetLeds.");
+			return;
+		}
+		break;
+	}
+}
+for(i = 0; i < gradio.length; i++)
+{
+	if(gradio[i].checked)
+	{
+		if(i==0)
+		{
+			value=value+2;
+		}
+		if(i==2)
+		{
+			window.alert("Toggle is not permited for SetLeds.");
+			return;
+		}
+		break;
+	}
+}
+for(i = 0; i < yradio.length; i++)
+{
+	if(yradio[i].checked)
+	{
+		if(i==0)
+		{
+			value=value+4;
+		}
+		if(i==2)
+		{
+			window.alert("Toggle is not permited for SetLeds.");
+			return;
+		}
+		break;
+	}
+}
+
+val="val="+value;
+set=getsetting();
+param="xcmd.cgi?"+cmd+"&"+val+"&"+exstr+"&"+set;
+window.parent.frames["botFrame"].document.location.replace(param);
+}
+
+function redact() {
+//var doc = document;
+var cmd="cmd=17";
+var val="val=0";
+var exstr="estr=0";
+var set="set=";
+var param="";
+for(i = 0; i < rradio.length; i++)
+{
+	if(rradio[i].checked)
+	{
+		val="val="+(i+1);
+		break;
+	}
+}
+if(val=="val=0")
+{
+	return;
+}
+set=getsetting();
+param="xcmd.cgi?"+cmd+"&"+val+"&"+exstr+"&"+set;
+window.parent.frames["botFrame"].document.location.replace(param);
+}
+
+function yellowact() {
+//var doc = document;
+var cmd="cmd=18";
+var val="val=0";
+var exstr="estr=0";
+var set="set=";
+var param="";
+for(i = 0; i < yradio.length; i++)
+{
+	if(yradio[i].checked)
+	{
+		val="val="+(i+1);
+		break;
+	}
+}
+if(val=="val=0")
+{
+	return;
+}
+set=getsetting();
+param="xcmd.cgi?"+cmd+"&"+val+"&"+exstr+"&"+set;
+window.parent.frames["botFrame"].document.location.replace(param);
+}
+
+function greenact() {
+//var doc = document;
+var cmd="cmd=19";
+var val="val=0";
+var exstr="estr=0";
+var set="set=";
+var param="";
+var param2="";
+for(i = 0; i < gradio.length; i++)
+{
+	if(gradio[i].checked)
+	{
+		val="val="+(i+1);
+		break;
+	}
+}
+if(val=="val=0")
+{
+	return;
+}
+set=getsetting();
+param="xcmd.cgi?"+cmd+"&"+val+"&"+exstr+"&"+set;
+window.parent.frames["botFrame"].document.location.replace(param);
+}
+function getconfig()
+{
+	var str="";
+	var exstr="estr=0";
+	str=getsetting();
+	var param="xcmd.cgi?cmd=5&val=0&"+exstr+"&"+str;
+	window.parent.frames["botFrame"].document.location.replace(param);
+}
+function setvalue() {
+var idx=0;
+var cmd="";
+var val="";
+var exstr="estr=0";
+var set="set=";
+var param="";
+var data=0;
+var letter='0';
+var hexchars="0123456789abcdef";
+var validchars = "0123456789";
+idx=valselect.selectedIndex+130;
+cmd="cmd="+idx;
+if(valuestr.value=="" )
+{
+	window.alert("The value can not be empty.");
+	return ;
+}
+var check=true;
+for (var i=0; i < valuestr.value.length; i++) {
+	letter = valuestr.value.charAt(i).toLowerCase();
+	if (validchars.indexOf(letter) != -1)
+		continue;
+	alert("Invalid character in VALUE: " + letter);
+	check=false;
+	return ;
+}
+
+val="val="+valuestr.value;
+
+set=getsetting();
+param="xcmd.cgi?"+cmd+"&"+val+"&"+exstr+"&"+set;
+window.parent.frames["botFrame"].document.location.replace(param);
+}
+
+//-->
+</SCRIPT>
+<table width="649" border="0">
+  <tr>
+    <td width="82" align="right"><strong>Send To :</strong></td>
+    <td width="134">Node ID:
+    <input name="nodeid" type="text" id="nodeid" value="0" size="6"></td>
+    <td width="57">&nbsp;</td>
+    <td width="358">Group ID:
+    <input name="groupid" type="text" id="groupid" value="125" size="7"></td>
+  </tr>
+</table>
+<table width="652" border="0">
+  <tr>
+    <td colspan="2" align="left"><strong>Network Power Management</strong></td>
+    <td align="right">&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="146" align="right"><input name="WakeBtn" type="submit" id="WakeBtn" value="WAKE" onClick="wakefunc()"></td>
+    <td width="141" align="right"><input name="SleepBtn" type="submit" id="SleepBtn" value="SLEEP" onClick="sleepfunc()"></td>
+    <td width="135" align="right"><input name="ResetBtn" type="submit" id="ResetBtn" value="RESET" onClick="resetfunc()"></td>
+    <td width="170">&nbsp;</td>
+    <td width="38">&nbsp;</td>
+  </tr>
+</table>
+<table width="653" border="0">
+  <tr>
+    <td colspan="3"><strong>Mote Configuration</strong></td>
+    <td>&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="76" align="right"> Field</td>
+    <td width="98"><select name="valselect" id="valselect">
+      <option>Node ID</option>
+      <option>RF Power</option>
+      <option>Rate</option>
+    </select></td>
+    <td width="43">Value</td>
+    <td width="128"><input name="valuestr" type="text" id="valuestr" size="10"></td>
+    <td width="75"><input type="submit" name="Submit" value=" SEND  " onClick="setvalue()"></td>
+    <td width="207"><input name="GetCfgbtn" type="submit" id="GetCfgbtn" value="  GET  CONFIG  " onClick="getconfig()"></td>
+  </tr>
+</table>
+<table width="653" border="0">
+  <tr>
+    <td colspan="2"><strong>Actuation:</strong></td>
+    <td width="76">&nbsp;</td>
+    <td width="103">&nbsp;</td>
+    <td colspan="2">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="86" align="center" valign="top"><input name="imageField" type="image" src="images/red.gif" width="19" height="19" border="0"></td>
+    <td width="79" valign="top"><input type="radio" name="rradio" value=" red on ">
+    On</td>
+    <td valign="top"><input type="radio" name="rradio" value=" red off ">
+    Off</td>
+    <td valign="top"><input type="radio" name="rradio" value=" red toggle ">
+    Toggle</td>
+    <td colspan="2" valign="top"><input name="RedSet" type="submit" id="RedSet" value="   SET   " onClick="redact()" ></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><input name="imageField" type="image" src="images/yellow.gif" width="19" height="19" border="0"></td>
+    <td valign="top"><input type="radio" name="yradio" value="radiobutton">
+    On</td>
+    <td valign="top"><input type="radio" name="yradio" value="radiobutton">
+    Off</td>
+    <td valign="top"><input type="radio" name="yradio" value="radiobutton">
+    Toggle</td>
+    <td width="78" valign="top"><input name="YellowSet" type="submit" id="YellowSet" value="   SET   " onClick="yellowact()"></td>
+    <td width="205" valign="top"><input name="setleds" type="submit" id="setleds" value="     SET    ALL     " onClick="setleds()"></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><input name="imageField" type="image" src="images/green.gif" width="19" height="19" border="0"></td>
+    <td valign="top"><input type="radio" name="gradio" value="radiobutton">
+    On</td>
+    <td valign="top"><input type="radio" name="gradio" value="radiobutton">
+    Off</td>
+    <td valign="top"><input type="radio" name="gradio" value="radiobutton">
+    Toggle</td>
+    <td colspan="2" valign="top"><input name="GreenSet" type="submit" id="GreenSet" value="   SET   " onClick="greenact()"></td>
+  </tr>
+</table>
+<table width="653" border="0">
+  <tr>
+    <td width="93">&nbsp;</td>
+    <td width="296">&nbsp;</td>
+    <td width="250">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+

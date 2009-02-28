@@ -1,0 +1,32 @@
+#-*-Makefile-*- vim:syntax=make
+#$Id: rcb230.target,v 1.3.2.1 2007/01/15 03:33:56 lwei Exp $
+
+#============================================
+#  Atmel MEGA1281V
+#  AVR_FUSE_H:
+#  ---- ---x bit is Boot Reset Vector Enable[0] (X8) Disable[1] (X9)
+#  -x-- ---- bit is  Jtag             Enable[0] (9X) Disable[1] (dX)
+
+#  AVR_FUSE_L:
+# Int. RC Osc Start-up time: 6CK+0ms  (c2)
+# Int. RC Osc Start-up time: 6CK+4ms  (d2)
+# Int. RC Osc Start-up time: 6CK+64ms (e2)
+# Ext.Crystal Osc Start-up time:16K+0ms  (df)
+# Ext.Crystal Osc Start-up time:16K+4ms  (ef)
+# Ext.Crystal Osc Start-up time:16K+64ms (ff)
+#============================================
+
+PLATFORM = rcb230
+SENSORBOARD ?= micasb
+PROGRAMMER_PART ?= -dpart=ATmega1281 --wr_fuse_e=ff
+PFLAGS += -finline-limit=100000
+
+AVR_FUSE_L ?= 0xe2
+AVR_FUSE_H ?= 0xd9
+
+
+
+$(call TOSMake_include_platform,avr)
+
+rcb230: $(BUILD_DEPS)
+	@:

@@ -1,0 +1,126 @@
+#!/usr/bin/perl
+#
+# FILE:         fuses
+# AUTHOR:       Martin Turon
+# DATE CREATED: October 5, 2004
+# DESCRIPTION:  Wrapper script around uisp to simplify fuse manipulation
+#               on MICA2 motes.
+#
+# $Id: fuses,v 1.1.4.7 2007/02/06 08:23:23 barry Exp $
+#
+
+my $g_version = '$Id: fuses,v 1.1.4.7 2007/02/06 08:23:23 barry Exp $';
+
+print "fuses Ver:$g_version\n";
+
+my %Cmds_128 = (
+  read     => '--rd_fuses',
+  reset    => '--wr_fuse_h=0xd9 --wr_fuse_e=0xff',
+  clkint   => '--wr_fuse_l=0xc4',
+  clkext   => '--wr_fuse_l=0xff',
+  jtagen   => '--wr_fuse_h=0x19',
+  jtagdis  => '--wr_fuse_h=0xd9',
+  jtagotap => '--wr_fuse_h=0x18',
+  boototap => '--wr_fuse_h=0xd8',
+);
+
+my %Cmds_1281 = (
+  read     => '--rd_fuses',
+  reset    => '--wr_fuse_h=0xd9 --wr_fuse_e=0xff',
+  clkint   => '--wr_fuse_l=0xc2',
+  clkext   => '--wr_fuse_l=0xff',
+  jtagen   => '--wr_fuse_h=0x19',
+  jtagdis  => '--wr_fuse_h=0xd9',
+  jtagotap => '--wr_fuse_h=0x18',
+  boototap => '--wr_fuse_h=0xd8',
+);
+ 
+if( @ARGV == 0 ) {
+  print <<"EOF";
+  Usage: fuses [command] [port]
+    read     = read fuses
+    reset    = reset to defaults
+	
+    clkint   = set to internal oscillator
+    clkext   = set to external oscillator
+	
+    jtagen   = enable JTAG
+    jtagdis  = disable JTAG	
+    jtagotap = enable JTAG and OTAP
+	
+    boototap = load bootloader high for OTAP
+	
+EOF
+
+  my $fmt = '%8s  %25s  %30s'."\n";
+  printf( $fmt, "Command", "Flag" );
+  printf( $fmt, "-------", "-" x 60 );
+  printf( $fmt, "platform","mica2 mica2dot micaz","m9100 m2100 m2110");
+  for my $cmd (sort keys %Cmds_128) {
+    printf( $fmt, $cmd, $Cmds_128{$cmd} ,$Cmds_1281{$cmd});
+  }
+  exit 0;
+}
+
+$command = shift();
+if($Cmds_128{$command} eq ""){
+	die("Error: No such command -> $command\n");
+}
+
+$comport = shift(); 
+if ($comport eq "") {
+   $comport = "/dev/ttyS0"; 
+}
+
+$mib     = &detect_mib($comport);
+$dpart   = &detect_mcu($mib);
+
+		
+if($dpart eq "ATmega128"){
+    $cmd = $Cmds_128{$command};
+}else{
+    $cmd = $Cmds_1281{$command};
+}
+$uisp    = "uisp -dpart=$dpart $mib";
+
+print "FUSES $command on $comport\n";
+print "$uisp $cmd\n";
+system "$uisp $cmd";
+
+
+sub detect_mib {
+    my ($port) = @_;
+
+    if ($port =~ m|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)|) {
+		return "-dprog=stk500 -dhost=$port"; 
+    } else {
+		return "-dprog=mib510 -dserial=$port"; 
+    }
+}
+sub detect_mcu {
+	my ($mibTemp) = @_;
+	$uisp_read = "uisp -dpart=ATmega128 --rd_fuses $mibTemp";
+	unless($readpid = (open READDPART, "$uisp_read 2>&1 |"))
+	{
+			die " ERROR: could not find uisp\n";
+	} 
+	$errMsg ="";
+	while($out = <READDPART>){
+		$errMsg =$errMsg.$out;
+		if($out=~ /ATmega1281/){
+			$mcuType="ATmega1281";
+		}else{
+			if($out=~ /ATmega128/){
+				$mcuType="ATmega128";	
+			}
+		}
+	}
+	if(($mcuType eq "ATmega1281")||($mcuType eq "ATmega128")){
+		return $mcuType;
+	}else{
+		print $errMsg;
+		exit 0;
+	}
+		
+}
+

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE XServeConfig SYSTEM "./xserve_config.dtd">
+<XServeConfig>
+	<XFieldExtractor name="XMDA320 Multihop PK6 Config XML" order="3">
+		<XFields>
+			<XField name="amtype" byteoffset="2" length="1" type="uint8"/>
+			<XField name="nodeid" byteoffset="7" length="2" type="uint16" specialtype="nodeid"/>
+			<XField name="parent" byteoffset="14" length="2" type="uint16" specialtype="parentid"/>
+			<XField name="group" byteoffset="3" length="1" type="uint8"/>
+			<XField name="socketid" byteoffset="11" length="1" type="uint8"/>
+			<XField name="board_id" byteoffset="12" length="1" type="uint8" specialtype="boardid"/>
+			<XField name="packet_id" byteoffset="13" length="1" type="uint8"/>
+			<XField name="voltage" byteoffset="16" length="2" type="uint16">
+				<XConversion function="(1252352/x)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="voltage" type="float"/>
+				</XConversion>
+			</XField>
+			<XField name="adc0" byteoffset="18" length="2" type="uint16">
+				<XConversion function="(625*x/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc0" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="adc1" byteoffset="20" length="2" type="uint16">
+				<XConversion function="(625*x/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc1" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="adc2" byteoffset="22" length="2" type="uint16">
+				<XConversion function="(625*x/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc2" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="adc3" byteoffset="24" length="2" type="uint16">
+				<XConversion function="(625*x/16384)" returntype="uint16">
+					<XConvParam variablename="x" fieldname="adc3" type="uint16"/>
+				</XConversion>
+			</XField>
+			<XField name="digi0" byteoffset="26" length="2" type="uint16"/>
+			<XField name="digi1" byteoffset="28" length="2" type="uint16"/>
+			<XField name="digi2" byteoffset="30" length="2" type="uint16"/>
+			<XField name="digi3" byteoffset="32" length="2" type="uint16"/>
+		</XFields>
+		<XFilter>
+			<XCondAnd>
+			
+				<!--
+					Check if this is a sensor type packet...AMTYPE_MULTIHOP or AMTYPE_XDEBUG
+					The Byte offsets defined above assume that there is a multihop header
+				/-->
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x31"/>
+					</XCond>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="amtype"/>
+						<XFilterParam name="fieldvalue" value="0x33"/>
+					</XCond>
+					<XCondAnd>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x31"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="socketid"/>
+								<XFilterParam name="fieldvalue" value="0x33"/>
+							</XCond>
+						</XCondOr>
+						<XCondOr>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0B"/>
+							</XCond>
+							<XCond name="IsEqual">
+								<XFilterParam name="fieldname" value="amtype"/>
+								<XFilterParam name="fieldvalue" value="0x0D"/>
+							</XCond>
+						</XCondOr>
+					
+					</XCondAnd>
+				</XCondOr>
+				<XCond name="IsEqual">
+					<XFilterParam name="fieldname" value="board_id"/>
+					<XFilterParam name="fieldvalue" value="0x90"/>
+				</XCond>				
+				<XCondOr>
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x86"/>
+					</XCond>
+
+					<XCond name="IsEqual">
+						<XFilterParam name="fieldname" value="packet_id"/>
+						<XFilterParam name="fieldvalue" value="0x06"/>
+					</XCond>
+				</XCondOr>
+			</XCondAnd>
+		</XFilter>
+		<XDataSinks>
+			<XDataSink name="Generic Print Datasink">
+				<XDSParam name="printstring" value="MDA320 [sensor data converted to engineering units]:\n   health:     node id=%s parent=%s battery=%s mV\n   adc chan 0: voltage=%s mV\n   adc chan 1: voltage=%s mV\n   adc chan 2: voltage=%s mV\n   adc chan 3: voltage=%s mV\n   dig chan 0: =%s \n   dig chan 1: =%s \n   dig chan 2: =%s \n   dig chan 3: =%s "/>
+				<XDSParam name="printfields" value="nodeid,parent,voltage,adc0,adc1,adc2,adc3,digi0,digi1,digi2,digi3"/>
+			</XDataSink>
+			<XDataSink name="Open Log Datasink">
+				<XDSParam name="tablename_1" value="mda320_results"/>
+				<XDSParam name="createsql_1" value="CREATE TABLE mda320_results ( result_time timestamp without time zone,nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer, adc3 integer,digi0 integer,digi1 integer,digi2 integer,digi3 integer,voltage integer)"/>				
+				<XDSParam name="tablename_2" value="mda320_results_l"/>				
+				<XDSParam name="createsql_2" value="CREATE TABLE mda320_results_l ( result_time timestamp without time zone,nodeid integer, parent integer,adc0 integer, adc1 integer, adc2 integer, adc3 integer,digi0 integer,digi1 integer,digi2 integer,digi3 integer,voltage integer)"/>
+				<XDSParam name="rulesql_2" value="CREATE RULE cache_mda320_results AS ON INSERT TO mda320_results DO ( DELETE FROM mda320_results_l WHERE nodeid = NEW.nodeid;INSERT INTO mda320_results_l VALUES (NEW.*); )"/>				
+				<XDSParam name="insertsql_2" value="INSERT into mda320_results (result_time,nodeid,parent,voltage,adc0,adc1,adc2,adc3,digi0, digi1, digi2, digi3) values (now(),%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i)"/>
+				<XDSParam name="insertfields_2" value="nodeid,parent,voltage,adc0,adc1,adc2,adc3,digi0,digi1,digi2,digi3"/>
+			</XDataSink>
+			<XDataSink name="Generic test Datasink">
+				<XDSParam name="voltage" value="[2500,3500]"/>
+				<XDSParam name="adc0" value="[0,2500]"/>
+				<XDSParam name="adc1" value="[0,2500]"/>
+				<XDSParam name="adc2" value="[0,2500]"/>
+				<XDSParam name="adc3" value="[0,2500]"/>
+			</XDataSink>
+		</XDataSinks>
+	</XFieldExtractor>
+
+</XServeConfig>
+

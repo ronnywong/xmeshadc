@@ -1,0 +1,33 @@
+#!/usr/bin/perl
+#
+# @file    usetos
+# @author  Martin Turon
+# @date    January 11, 2006
+# @brief   Allows user to switch between MoteWorks and tinyos distribution
+#
+# This script must be run within backticks to allow changes to the 
+# environment to be taken by the parent process.  Examples:
+#
+#     `usetos`                -- defaults to MoteWorks settings
+#     `usetos moteworks`
+#     `usetos tinyos-1.x`     -- restores tinyos-1.x settings
+#
+# $Id: usetos,v 1.4 2006/01/27 22:45:18 mturon Exp $
+#
+
+$tosdir = shift();
+
+if (-e "/etc/profile.d/$tosdir.sh") {
+# Handle special trees by adding custom config file in /etc/profile.d
+# For example: tinyos-2.x
+    print "source /etc/profile.d/$tosdir.sh" ;
+
+} elsif ($tosdir =~ m/.*tinyos.*/) {
+# Otherwise, any tinyos reference defaults to tinyos-1.x
+    print "source /etc/profile.d/tinyos.sh" ;
+
+} else {
+# Finally, default all other cases to MoteWorks
+    print "source /etc/profile.d/xbow.sh" ;
+}
+

@@ -1,0 +1,8 @@
+@opts = ("-gcc=avr-gcc",
+	 "-mmcu=atmega1281",
+	 "-fnesc-target=avr",
+	 "-fnesc-no-debug");
+
+push @opts, "-mingw-gcc" if $cygwin;
+
+@commonplatforms = ("mica2b", "atm1281", "atm128");

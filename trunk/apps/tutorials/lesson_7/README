@@ -1,0 +1,18 @@
+README for Introduction to MoteWorks - Lesson 7: MyApp
+Author/Contact: Crossbow Technology Inc.
+
+Description:
+
+MyApp demonstrate how to write and read data from external flash on Mote.
+In this firmware, it will sample Light and save the last 7 readings into external flash, 
+next time, it will sample the new Light and read last 6 readings and send the last 7 values.
+
+Tools:
+
+None
+
+Known bugs/limitations:
+
+None
+
+See Also:

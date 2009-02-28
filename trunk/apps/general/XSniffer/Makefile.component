@@ -1,0 +1,7 @@
+# $Id: Makefile.component,v 1.1 2006/01/09 15:31:17 abroad Exp $
+
+COMPONENT=TOSBase
+ 
+INCLUDES +=-DTOSH_DATA_LENGTH=64
+
+
